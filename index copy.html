@@ -1,0 +1,3751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Board Helper</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  min-height:100vh;
+  color:#182746;
+  background:
+    radial-gradient(circle at 12% 20%,rgba(255,255,255,.95) 0 4%,transparent 18%),
+    radial-gradient(circle at 88% 18%,rgba(255,255,255,.80) 0 5%,transparent 20%),
+    radial-gradient(circle at 10% 85%,rgba(117,74,210,.32),transparent 30%),
+    radial-gradient(circle at 90% 82%,rgba(255,182,211,.35),transparent 32%),
+    linear-gradient(135deg,#bba9e9 0%,#e8c8ed 38%,#ffdcd0 72%,#b9d6ed 100%);
+  background-attachment:fixed;
+  overflow-x:hidden;
+  animation:pageFadeIn .5s ease-out;
+  position:relative;
+}
+
+/* Soft dreamy background */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-2;
+  background:
+    linear-gradient(165deg,transparent 0 53%,rgba(109,72,176,.22) 53.2% 62%,transparent 62.2%),
+    linear-gradient(20deg,transparent 0 62%,rgba(255,255,255,.32) 62.2% 68%,transparent 68.2%);
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  width:520px;
+  height:520px;
+  border-radius:50%;
+  right:-170px;
+  top:100px;
+  background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,0));
+  pointer-events:none;
+  z-index:-1;
+}
+
+@keyframes pageFadeIn{
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.page{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:38px 20px;
+}
+
+.box{
+  width:100%;
+  max-width:1120px;
+  background:rgba(255,255,255,.91);
+  border:1px solid rgba(255,255,255,.95);
+  border-radius:30px;
+  padding:38px;
+  box-shadow:
+    0 30px 80px rgba(70,45,115,.22),
+    0 5px 25px rgba(255,255,255,.45) inset;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+.login-box{
+  max-width:440px;
+  padding:38px;
+}
+
+h1{
+  text-align:center;
+  font-size:40px;
+  color:#182746;
+  margin-bottom:8px;
+  letter-spacing:-1px;
+}
+
+.login-box h1{
+  font-size:32px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#707b9d;
+  margin-bottom:28px;
+  font-size:17px;
+}
+
+.field{
+  margin-bottom:17px;
+}
+
+label{
+  display:block;
+  margin-bottom:7px;
+  font-weight:bold;
+  color:#26385f;
+}
+
+input,
+select,
+button{
+  width:100%;
+  padding:14px;
+  margin-top:8px;
+  border:none;
+  border-radius:13px;
+  font-size:15px;
+}
+
+input,
+select{
+  background:#fff;
+  color:#20283b;
+  border:1px solid #ded7ef;
+  box-shadow:0 4px 14px rgba(75,49,130,.07);
+  transition:.2s ease;
+}
+
+input:focus,
+select:focus{
+  outline:none;
+  border-color:#7350d7;
+  box-shadow:
+    0 0 0 4px rgba(115,80,215,.12),
+    0 5px 18px rgba(75,49,130,.08);
+}
+
+button{
+  background:linear-gradient(135deg,#5b38d6,#9b5ee7);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+  box-shadow:0 7px 18px rgba(91,56,214,.20);
+}
+
+button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.05);
+  box-shadow:0 10px 24px rgba(91,56,214,.28);
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+.message{
+  text-align:center;
+  margin-top:15px;
+  font-weight:bold;
+}
+
+.directed-by{
+  text-align:center;
+  margin-top:25px;
+  font-size:19px;
+  font-weight:600;
+  color:#26385f;
+}
+
+.login-info{
+  font-size:14px;
+  font-weight:400;
+  line-height:1.7;
+  color:#7b83a0;
+}
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard{
+  display:none;
+  position:relative;
+  width:100%;
+}
+
+.dashboard-top{
+  position:absolute;
+  top:0;
+  right:0;
+}
+
+.dashboard-top .settings-btn{
+  width:auto;
+  margin:0;
+  padding:14px 22px;
+  border-radius:15px;
+  font-size:16px;
+}
+
+.welcome{
+  text-align:left;
+  font-size:22px;
+  font-weight:bold;
+  color:#182746;
+  margin-top:8px;
+  margin-bottom:4px;
+}
+
+.welcome::first-line{
+  color:#182746;
+}
+
+.dashboard > h1{
+  padding-top:0;
+  margin-top:0;
+}
+
+.dashboard > .subtitle{
+  margin-bottom:30px;
+}
+
+/* =========================
+   QUICK STATS
+========================= */
+
+.quick-stats{
+  display:flex;
+  flex-direction:column;
+  gap:13px;
+  width:180px;
+  margin:10px 0 28px 0;
+}
+
+.stat-card{
+  background:transparent;
+  border:none;
+  border-radius:14px;
+  padding:3px 5px;
+  text-align:left;
+  display:grid;
+  grid-template-columns:40px 1fr;
+  grid-template-rows:auto auto;
+  column-gap:7px;
+  box-shadow:none;
+  transition:.2s ease;
+}
+
+.stat-card:hover{
+  transform:translateX(4px);
+  background:rgba(120,83,211,.05);
+}
+
+.stat-icon{
+  grid-row:1 / 3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:32px;
+  height:32px;
+  border-radius:9px;
+  font-size:20px;
+}
+
+.stat-card:nth-child(1) .stat-icon{
+  background:#eadfff;
+}
+
+.stat-card:nth-child(2) .stat-icon{
+  background:#ddf4df;
+}
+
+.stat-card:nth-child(3) .stat-icon{
+  background:#ffe8cf;
+}
+
+.stat-card:nth-child(4) .stat-icon{
+  background:#e2e5ff;
+}
+
+.stat-title{
+  color:#28395e;
+  font-size:15px;
+  line-height:1.2;
+  padding-top:1px;
+}
+
+.stat-value{
+  color:#6640d3;
+  font-size:17px;
+  font-weight:bold;
+  margin-top:2px;
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-area{
+  background:linear-gradient(
+    135deg,
+    rgba(250,247,255,.94),
+    rgba(246,241,252,.92)
+  );
+  border:1px solid #e3d9f2;
+  border-radius:23px;
+  padding:25px;
+  margin-top:6px;
+  margin-bottom:25px;
+  box-shadow:
+    0 10px 35px rgba(82,53,139,.07),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px 22px;
+}
+
+.search-area label{
+  color:#273b65;
+  font-size:15px;
+}
+
+.search-area input,
+.search-area select{
+  height:58px;
+  border-radius:13px;
+  font-size:16px;
+  padding:0 18px;
+}
+
+.search-area select{
+  appearance:auto;
+}
+
+.upload{
+  margin-top:22px;
+  padding:23px;
+  border:2px dashed #a987ef;
+  border-radius:20px;
+  text-align:center;
+  background:rgba(255,255,255,.38);
+  transition:.25s ease;
+}
+
+.upload:hover{
+  background:rgba(245,238,255,.75);
+  border-color:#7048d9;
+}
+
+.upload strong{
+  color:#182746;
+  font-size:18px;
+}
+
+.upload p{
+  color:#7a83a1 !important;
+}
+
+.upload input[type="file"]{
+  margin-top:17px;
+  background:#fff;
+  border:1px solid #e0d8ee;
+  height:auto;
+  padding:11px;
+}
+
+.search-area > button{
+  margin-top:18px;
+  min-height:58px;
+  font-size:18px;
+  border-radius:15px;
+}
+
+/* Practice button */
+.search-area > button:nth-last-child(1){
+  background:linear-gradient(135deg,#6843d6,#a06ae8);
+}
+
+/* =========================
+   RESULTS
+========================= */
+
+.results{
+  margin-top:25px;
+}
+
+.results > p{
+  color:#737c99 !important;
+}
+
+.question{
+  background:rgba(255,255,255,.97);
+  color:#222;
+  border-radius:18px;
+  padding:21px;
+  margin-bottom:15px;
+  border:1px solid #e4dcf1;
+  box-shadow:0 12px 35px rgba(71,45,121,.12);
+  animation:questionAppear .35s ease-out both;
+  transition:.2s ease;
+}
+
+.question:hover{
+  transform:translateY(-4px);
+  box-shadow:0 18px 40px rgba(71,45,121,.17);
+}
+
+@keyframes questionAppear{
+  from{
+    opacity:0;
+    transform:translateY(12px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.question h3{
+  color:#273c69;
+  margin-bottom:10px;
+  line-height:1.45;
+}
+
+.meta{
+  font-size:13px;
+  color:#747c95;
+  margin-bottom:12px;
+  line-height:1.7;
+}
+
+.solution{
+  background:#f3effc;
+  border-left:4px solid #7952dc;
+  padding:13px;
+  border-radius:10px;
+  margin-top:12px;
+  color:#424b64;
+  line-height:1.6;
+}
+
+.save-question{
+  display:block;
+  width:auto;
+  padding:7px 13px;
+  margin-top:10px;
+  font-size:14px;
+  border-radius:8px;
+}
+
+.remove-saved{
+  display:block;
+  width:auto;
+  padding:7px 13px;
+  margin-top:10px;
+  font-size:14px;
+  border-radius:8px;
+  background:linear-gradient(135deg,#ef6258,#d9433b);
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+.logout{
+  background:linear-gradient(135deg,#ef6258,#d9433b);
+}
+
+/* =========================
+   RECENT SEARCHES
+========================= */
+
+.recent-searches{
+  display:none;
+  margin-top:25px;
+  padding:22px;
+  background:rgba(247,243,253,.92);
+  border-radius:20px;
+  border:1px solid #e1d7ef;
+}
+
+.recent-searches h2{
+  margin-bottom:15px;
+  color:#27385e;
+}
+
+#recentSearchList p{
+  color:#7b829c;
+  text-align:center;
+}
+
+.recent-item{
+  background:#fff;
+  padding:13px 15px;
+  border-radius:12px;
+  margin-top:10px;
+  color:#34415f;
+  border:1px solid #e5ddf0;
+  transition:.2s ease;
+}
+
+.recent-item:hover{
+  background:#f7f2ff;
+  transform:translateX(5px);
+}
+
+/* =========================
+   SETTINGS
+========================= */
+
+.settings-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(45,31,75,.42);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.settings-box{
+  width:90%;
+  max-width:430px;
+  background:rgba(255,255,255,.98);
+  padding:28px;
+  border-radius:25px;
+  box-shadow:0 30px 90px rgba(48,32,83,.28);
+  text-align:center;
+  border:1px solid rgba(255,255,255,.95);
+  animation:settingsPop .3s ease-out;
+}
+
+@keyframes settingsPop{
+  from{
+    opacity:0;
+    transform:scale(.92) translateY(15px);
+  }
+  to{
+    opacity:1;
+    transform:scale(1) translateY(0);
+  }
+}
+
+.settings-box h2{
+  margin-bottom:20px;
+  color:#26385e;
+}
+
+.settings-box button{
+  margin-top:10px;
+}
+
+.support{
+  margin-top:20px;
+  padding-top:15px;
+  border-top:1px solid #e2dbea;
+}
+
+.support strong{
+  display:block;
+  margin-bottom:10px;
+  color:#26385e;
+}
+
+.support a{
+  color:#7048d9;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+/* =========================
+   PRACTICE
+========================= */
+
+.practice-box{
+  background:linear-gradient(
+    135deg,
+    rgba(248,244,255,.96),
+    rgba(243,238,252,.95)
+  );
+  border:1px solid #e0d7ef;
+  border-radius:22px;
+  padding:25px;
+  margin-top:25px;
+}
+
+.practice-box h2{
+  color:#26385e;
+}
+
+.practice-box > p{
+  color:#7b829b !important;
+}
+
+.practice-question{
+  background:#fff;
+  color:#222;
+  border-radius:18px;
+  padding:25px;
+  margin-top:20px;
+  border:1px solid #e4dcef;
+  box-shadow:0 10px 30px rgba(73,49,121,.08);
+}
+
+.practice-question h2{
+  color:#273c69;
+  margin-bottom:20px;
+  line-height:1.5;
+}
+
+.practice-option{
+  width:100%;
+  background:#f8f6fb;
+  color:#222;
+  border:2px solid #e0d9ea;
+  margin-top:12px;
+  text-align:left;
+  box-shadow:none;
+}
+
+.practice-option:hover{
+  background:#f0eaff;
+  border-color:#a88ae5;
+}
+
+.practice-option.correct{
+  background:#d9f4df !important;
+  border-color:#28a745 !important;
+  color:#155724 !important;
+}
+
+.practice-option.wrong{
+  background:#f9d9dc !important;
+  border-color:#dc3545 !important;
+  color:#721c24 !important;
+}
+
+.practice-option:disabled{
+  cursor:default;
+  opacity:1;
+}
+
+.practice-score{
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  margin:15px 0;
+  color:#6742d2;
+}
+
+.practice-next{
+  margin-top:20px;
+}
+
+.practice-hidden{
+  display:none !important;
+}
+
+/* =========================
+   PERFORMANCE
+========================= */
+
+.performance-box{
+  margin-top:25px;
+  background:linear-gradient(
+    135deg,
+    rgba(248,244,255,.94),
+    rgba(243,238,252,.94)
+  );
+  border:1px solid #e1d7ef;
+  border-radius:22px;
+  padding:22px;
+}
+
+.performance-box h2{
+  color:#27385e;
+}
+
+.performance-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-top:18px;
+}
+
+.performance-card{
+  background:#fff;
+  border:1px solid #e7dfef;
+  border-radius:15px;
+  padding:16px;
+  text-align:center;
+  color:#59627b;
+}
+
+.performance-card .big{
+  font-size:25px;
+  font-weight:bold;
+  margin-top:5px;
+  color:#6742d2;
+}
+
+.performance-progress{
+  height:14px;
+  background:#e5dff0;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:18px;
+}
+
+.performance-progress-bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#6540d6,#a365e8);
+  border-radius:20px;
+  transition:width .5s ease;
+}
+
+.performance-message{
+  text-align:center;
+  margin-top:15px;
+  color:#717b97;
+  font-weight:bold;
+}
+
+.clear-performance{
+  background:#e74c3c;
+  margin-top:15px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:800px){
+
+  .performance-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:700px){
+
+  .page{
+    padding:12px;
+  }
+
+  .box{
+    padding:22px;
+    border-radius:22px;
+  }
+
+  h1{
+    font-size:30px;
+  }
+
+  .dashboard-top{
+    position:static;
+    margin-bottom:20px;
+    text-align:right;
+  }
+
+  .dashboard-top .settings-btn{
+    width:auto;
+  }
+
+  .dashboard > h1{
+    margin-top:5px;
+  }
+
+  .welcome{
+    font-size:19px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .quick-stats{
+    width:100%;
+  }
+
+  .performance-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .search-area{
+    padding:18px;
+  }
+}
+
+@media(max-width:480px){
+
+  .page{
+    padding:8px;
+  }
+
+  .box{
+    padding:18px;
+    border-radius:20px;
+  }
+
+  h1{
+    font-size:27px;
+  }
+
+  .subtitle{
+    font-size:14px;
+  }
+
+  .performance-grid{
+    grid-template-columns:1fr;
+  }
+
+  .settings-box{
+    padding:22px;
+  }
+
+  .dashboard-top .settings-btn{
+    width:100%;
+  }
+}
+/* =====================================================
+   PREMIUM BOARD HELPER INTRO
+===================================================== */
+
+#premiumIntro{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  overflow:hidden;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(125,72,235,.42),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(255,170,215,.40),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #a98ce8 0%,
+      #d9bce8 45%,
+      #ffe2d2 100%
+    );
+
+  animation:introBackgroundIn .8s ease-out;
+}
+
+
+/* Moving Aurora */
+
+.aurora{
+  position:absolute;
+  width:420px;
+  height:420px;
+
+  border-radius:50%;
+
+  filter:blur(80px);
+  opacity:.38;
+
+  pointer-events:none;
+}
+
+.aurora1{
+  left:-130px;
+  top:-130px;
+  background:#7445df;
+
+  animation:
+    auroraMove1 5s ease-in-out infinite alternate;
+}
+
+.aurora2{
+  right:-140px;
+  bottom:-140px;
+  background:#ff9fca;
+
+  animation:
+    auroraMove2 6s ease-in-out infinite alternate;
+}
+
+
+/* =====================================================
+   FLOATING PARTICLES
+===================================================== */
+
+.particles{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+
+.particles i{
+  position:absolute;
+
+  width:5px;
+  height:5px;
+
+  border-radius:50%;
+
+  background:rgba(255,255,255,.75);
+
+  box-shadow:
+    0 0 12px rgba(255,255,255,.9);
+
+  animation:
+    particleFloat
+    5s linear infinite;
+}
+
+
+/* Different particle positions */
+
+.particles i:nth-child(1){
+  left:8%;
+  top:80%;
+  animation-delay:0s;
+}
+
+.particles i:nth-child(2){
+  left:16%;
+  top:60%;
+  animation-delay:1s;
+}
+
+.particles i:nth-child(3){
+  left:25%;
+  top:90%;
+  animation-delay:2s;
+}
+
+.particles i:nth-child(4){
+  left:34%;
+  top:70%;
+  animation-delay:.5s;
+}
+
+.particles i:nth-child(5){
+  left:45%;
+  top:85%;
+  animation-delay:1.5s;
+}
+
+.particles i:nth-child(6){
+  left:54%;
+  top:65%;
+  animation-delay:2.5s;
+}
+
+.particles i:nth-child(7){
+  left:64%;
+  top:88%;
+  animation-delay:1.2s;
+}
+
+.particles i:nth-child(8){
+  left:73%;
+  top:72%;
+  animation-delay:3s;
+}
+
+.particles i:nth-child(9){
+  left:82%;
+  top:82%;
+  animation-delay:.8s;
+}
+
+.particles i:nth-child(10){
+  left:91%;
+  top:62%;
+  animation-delay:2.2s;
+}
+
+.particles i:nth-child(11){
+  left:12%;
+  top:35%;
+  animation-delay:3.5s;
+}
+
+.particles i:nth-child(12){
+  left:30%;
+  top:25%;
+  animation-delay:1.8s;
+}
+
+.particles i:nth-child(13){
+  left:68%;
+  top:30%;
+  animation-delay:2.8s;
+}
+
+.particles i:nth-child(14){
+  left:78%;
+  top:45%;
+  animation-delay:1.4s;
+}
+
+.particles i:nth-child(15){
+  left:94%;
+  top:25%;
+  animation-delay:3.2s;
+}
+
+
+/* =====================================================
+   INTRO CENTER
+===================================================== */
+
+.introCenter{
+  position:relative;
+  z-index:5;
+
+  text-align:center;
+
+  opacity:0;
+
+  transform:
+    translateY(25px)
+    scale(.92);
+
+  animation:
+    introCenterIn
+    1s
+    cubic-bezier(.2,.9,.2,1)
+    .1s
+    forwards;
+}
+
+
+/* Graduation Cap */
+
+.introCap{
+  display:inline-block;
+
+  font-size:88px;
+
+  filter:
+    drop-shadow(
+      0 15px 20px
+      rgba(72,40,150,.28)
+    );
+
+  opacity:0;
+
+  transform:
+    translateY(-45px)
+    rotate(-15deg)
+    scale(.65);
+
+  animation:
+    capPremiumIn
+    .9s
+    cubic-bezier(.2,1.5,.4,1)
+    .25s
+    forwards,
+
+    capPremiumFloat
+    2.8s
+    ease-in-out
+    1.15s
+    infinite;
+}
+
+
+/* =====================================================
+   LETTER BY LETTER TITLE
+===================================================== */
+
+.introTitle{
+  margin-top:18px;
+
+  font-size:54px;
+  font-weight:900;
+
+  letter-spacing:-1px;
+
+  color:#17284f;
+
+  text-shadow:
+    0 4px 18px
+    rgba(54,35,120,.12);
+
+  white-space:nowrap;
+}
+
+.introTitle span{
+  display:inline-block;
+
+  opacity:0;
+
+  transform:
+    translateY(25px)
+    rotateX(70deg);
+
+  animation:
+    letterReveal
+    .55s
+    cubic-bezier(.2,.8,.2,1)
+    forwards;
+}
+
+
+/* Individual timing */
+
+.introTitle span:nth-child(1){animation-delay:.55s}
+.introTitle span:nth-child(2){animation-delay:.60s}
+.introTitle span:nth-child(3){animation-delay:.65s}
+.introTitle span:nth-child(4){animation-delay:.70s}
+.introTitle span:nth-child(5){animation-delay:.75s}
+.introTitle span:nth-child(6){animation-delay:.80s}
+.introTitle span:nth-child(7){animation-delay:.85s}
+.introTitle span:nth-child(8){animation-delay:.90s}
+.introTitle span:nth-child(9){animation-delay:.95s}
+.introTitle span:nth-child(10){animation-delay:1s}
+.introTitle span:nth-child(11){animation-delay:1.05s}
+.introTitle span:nth-child(12){animation-delay:1.10s}
+
+
+/* Light sweep */
+
+.introTitle{
+  position:relative;
+}
+
+.introTitle::after{
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  left:-20%;
+
+  width:30%;
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.75),
+      transparent
+    );
+
+  transform:skewX(-20deg);
+
+  opacity:0;
+
+  animation:
+    titleSweep
+    1s
+    ease-in-out
+    1.35s
+    forwards;
+}
+
+
+/* Subtitle */
+
+.introSubtitle{
+  margin-top:10px;
+
+  font-size:18px;
+  font-weight:500;
+
+  color:#60678b;
+
+  opacity:0;
+
+  transform:translateY(15px);
+
+  animation:
+    subtitlePremiumIn
+    .7s
+    ease-out
+    1.25s
+    forwards;
+}
+
+
+/* Loader */
+
+.introLoader{
+  width:250px;
+  height:5px;
+
+  margin:28px auto 0;
+
+  border-radius:50px;
+
+  background:
+    rgba(255,255,255,.45);
+
+  overflow:hidden;
+
+  opacity:0;
+
+  animation:
+    loaderAppear
+    .5s
+    ease-out
+    1.35s
+    forwards;
+}
+
+.introLoader div{
+  width:0;
+  height:100%;
+
+  border-radius:50px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #633ed6,
+      #9560ed,
+      #ca8ce8
+    );
+
+  box-shadow:
+    0 0 12px
+    rgba(112,70,220,.55);
+
+  animation:
+    loaderProgress
+    1.35s
+    cubic-bezier(.4,0,.2,1)
+    1.4s
+    forwards;
+}
+
+
+/* Loading text */
+
+.introLoading{
+  margin-top:13px;
+
+  font-size:13px;
+
+  color:#707796;
+
+  opacity:0;
+
+  animation:
+    loadingAppear
+    .6s
+    ease-out
+    1.45s
+    forwards;
+}
+
+
+/* =====================================================
+   INTRO EXIT
+===================================================== */
+
+#premiumIntro.hideIntro{
+  animation:
+    premiumIntroExit
+    .8s
+    cubic-bezier(.4,0,.2,1)
+    forwards;
+}
+
+
+/* =====================================================
+   DASHBOARD ENTRY EFFECT
+===================================================== */
+
+.dashboard{
+  animation:
+    dashboardReveal
+    .7s
+    cubic-bezier(.2,.8,.2,1);
+}
+
+.dashboard .stat-card{
+  animation:
+    cardFloatIn
+    .65s
+    cubic-bezier(.2,.8,.2,1)
+    both;
+}
+
+.dashboard .stat-card:nth-child(1){
+  animation-delay:.05s;
+}
+
+.dashboard .stat-card:nth-child(2){
+  animation-delay:.12s;
+}
+
+.dashboard .stat-card:nth-child(3){
+  animation-delay:.19s;
+}
+
+.dashboard .stat-card:nth-child(4){
+  animation-delay:.26s;
+}
+
+
+/* Premium card glow */
+
+.stat-card,
+.search-area,
+.performance-box{
+  position:relative;
+  overflow:hidden;
+}
+
+.stat-card::before,
+.search-area::before,
+.performance-box::before{
+  content:"";
+
+  position:absolute;
+
+  width:120px;
+  height:120px;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(170,120,255,.22),
+      transparent 70%
+    );
+
+  top:-70px;
+  right:-50px;
+
+  pointer-events:none;
+
+  transition:.4s ease;
+}
+
+.stat-card:hover::before,
+.search-area:hover::before,
+.performance-box:hover::before{
+  transform:scale(2);
+}
+
+
+/* Search button shine */
+
+.search-area > button{
+  position:relative;
+  overflow:hidden;
+}
+
+.search-area > button::after{
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  left:-120%;
+
+  width:70%;
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.25),
+      transparent
+    );
+
+  transform:skewX(-20deg);
+
+  animation:
+    buttonShine
+    3.5s
+    ease-in-out
+    2s
+    infinite;
+}
+
+
+/* =====================================================
+   KEYFRAMES
+===================================================== */
+
+@keyframes introBackgroundIn{
+  from{
+    opacity:0;
+  }
+  to{
+    opacity:1;
+  }
+}
+
+@keyframes introCenterIn{
+  from{
+    opacity:0;
+    transform:
+      translateY(25px)
+      scale(.92);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@keyframes capPremiumIn{
+  0%{
+    opacity:0;
+    transform:
+      translateY(-45px)
+      rotate(-15deg)
+      scale(.65);
+  }
+
+  70%{
+    opacity:1;
+    transform:
+      translateY(5px)
+      rotate(4deg)
+      scale(1.08);
+  }
+
+  100%{
+    opacity:1;
+    transform:
+      translateY(0)
+      rotate(0)
+      scale(1);
+  }
+}
+
+@keyframes capPremiumFloat{
+  0%,100%{
+    transform:
+      translateY(0)
+      rotate(0);
+  }
+
+  50%{
+    transform:
+      translateY(-9px)
+      rotate(2deg);
+  }
+}
+
+@keyframes letterReveal{
+  from{
+    opacity:0;
+    transform:
+      translateY(25px)
+      rotateX(70deg);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateY(0)
+      rotateX(0);
+  }
+}
+
+@keyframes titleSweep{
+  0%{
+    left:-20%;
+    opacity:0;
+  }
+
+  20%{
+    opacity:1;
+  }
+
+  100%{
+    left:120%;
+    opacity:0;
+  }
+}
+
+@keyframes subtitlePremiumIn{
+  from{
+    opacity:0;
+    transform:translateY(15px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+@keyframes loaderAppear{
+  from{
+    opacity:0;
+    transform:scaleX(.6);
+  }
+
+  to{
+    opacity:1;
+    transform:scaleX(1);
+  }
+}
+
+@keyframes loaderProgress{
+  from{
+    width:0;
+  }
+
+  to{
+    width:100%;
+  }
+}
+
+@keyframes loadingAppear{
+  from{
+    opacity:0;
+  }
+
+  to{
+    opacity:1;
+  }
+}
+
+@keyframes particleFloat{
+  0%{
+    transform:
+      translateY(40px)
+      scale(.5);
+
+    opacity:0;
+  }
+
+  15%{
+    opacity:.8;
+  }
+
+  80%{
+    opacity:.6;
+  }
+
+  100%{
+    transform:
+      translateY(-100vh)
+      scale(1.3);
+
+    opacity:0;
+  }
+}
+
+@keyframes auroraMove1{
+  from{
+    transform:
+      translate(0,0)
+      scale(1);
+  }
+
+  to{
+    transform:
+      translate(100px,70px)
+      scale(1.25);
+  }
+}
+
+@keyframes auroraMove2{
+  from{
+    transform:
+      translate(0,0)
+      scale(1);
+  }
+
+  to{
+    transform:
+      translate(-90px,-70px)
+      scale(1.2);
+  }
+}
+
+@keyframes premiumIntroExit{
+  0%{
+    opacity:1;
+    transform:scale(1);
+  }
+
+  100%{
+    opacity:0;
+    transform:scale(1.06);
+    visibility:hidden;
+    pointer-events:none;
+  }
+}
+
+@keyframes dashboardReveal{
+  from{
+    opacity:0;
+    transform:
+      translateY(18px)
+      scale(.985);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@keyframes cardFloatIn{
+  from{
+    opacity:0;
+    transform:
+      translateY(25px)
+      scale(.96);
+  }
+
+  to{
+    opacity:1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+@keyframes buttonShine{
+  0%{
+    left:-120%;
+  }
+
+  30%,100%{
+    left:120%;
+  }
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width:600px){
+
+  .introCap{
+    font-size:68px;
+  }
+
+  .introTitle{
+    font-size:39px;
+    letter-spacing:-.5px;
+  }
+
+  .introSubtitle{
+    font-size:15px;
+  }
+
+  .introLoader{
+    width:190px;
+  }
+
+  .introLoading{
+    font-size:12px;
+  }
+
+  .aurora{
+    width:280px;
+    height:280px;
+    filter:blur(60px);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- PREMIUM INTRO -->
+<div id="premiumIntro">
+  <div class="aurora aurora1"></div>
+  <div class="aurora aurora2"></div>
+
+  <div class="particles">
+    <i></i><i></i><i></i><i></i><i></i>
+    <i></i><i></i><i></i><i></i><i></i>
+    <i></i><i></i><i></i><i></i><i></i>
+  </div>
+
+  <div class="introCenter">
+
+    <div class="introCap">🎓</div>
+
+    <div class="introTitle">
+      <span>B</span><span>o</span><span>a</span><span>r</span><span>d</span>
+      <span>&nbsp;</span>
+      <span>H</span><span>e</span><span>l</span><span>p</span><span>e</span><span>r</span>
+    </div>
+
+    <div class="introSubtitle">
+      Class 10 Board Question Finder
+    </div>
+
+    <div class="introLoader">
+      <div></div>
+    </div>
+
+    <div class="introLoading">
+      Preparing your dashboard...
+    </div>
+
+  </div>
+</div>
+
+<div class="page">
+
+<!-- LOGIN -->
+
+<div class="box login-box" id="loginPage">
+
+  <h1>📚 Board Helper</h1>
+
+  <p class="subtitle">
+    Class 10 Board Question Finder
+  </p>
+
+  <div class="field">
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Enter username">
+  </div>
+
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Enter password">
+  </div>
+
+  <button onclick="login()">Login</button>
+
+  <p class="directed-by">
+    <strong>Directed by - VANSH RAJPUT</strong><br>
+    <span class="login-info">
+      Username = VANSH RAJPUT<br>
+      Pass = 1234
+    </span>
+  </p>
+
+  <div class="message" id="loginMessage"></div>
+
+</div>
+
+
+<!-- DASHBOARD -->
+
+<div class="box dashboard" id="dashboard">
+
+  <div class="dashboard-top">
+    <button class="settings-btn" onclick="openSettings()">
+      ⚙️ Settings
+    </button>
+  </div>
+
+  <h1>🎓 Board Helper</h1>
+
+  <p class="welcome">
+    Welcome, <span style="color:#7048d9;">Guys</span> 👋
+  </p>
+
+  <p class="subtitle">
+    Class 10 Board Question Finder • <span style="color:#7048d9;">2024–2026</span>
+  </p>
+
+
+  <!-- QUICK STATS -->
+
+  <div class="quick-stats">
+
+    <div class="stat-card">
+      <div class="stat-icon">📚</div>
+      <div class="stat-title">Questions</div>
+      <div class="stat-value" id="questionCount">...</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📖</div>
+      <div class="stat-title">Subjects</div>
+      <div class="stat-value">5</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-title">Years</div>
+      <div class="stat-value">2024–2026</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-title">Best Score</div>
+      <div class="stat-value" id="bestScore">0%</div>
+    </div>
+
+  </div>
+
+
+  <!-- SEARCH -->
+
+  <div class="search-area">
+
+    <div class="grid">
+
+      <div>
+        <label>Subject</label>
+
+        <select id="subject" onchange="updateChapters()">
+          <option value="">Select Subject</option>
+          <option value="Science">Science</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Social Science">Social Science</option>
+          <option value="English">English</option>
+          <option value="Hindi">Hindi</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Chapter</label>
+
+        <select id="chapter">
+          <option value="">Select Chapter</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Concept</label>
+
+        <input
+          type="text"
+          id="concept"
+          placeholder="Example: Photosynthesis">
+      </div>
+
+      <div>
+        <label>Year</label>
+
+        <select id="year">
+          <option value="">All Years</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Marks</label>
+
+        <select id="marks">
+          <option value="">All Marks</option>
+          <option value="1">1 Mark</option>
+          <option value="2">2 Marks</option>
+          <option value="3">3 Marks</option>
+          <option value="4">4 Marks</option>
+          <option value="5">5 Marks</option>
+          <option value="6">6 Marks</option>
+          <option value="7">7 Marks</option>
+        </select>
+      </div>
+
+    </div>
+
+
+    <div class="upload">
+
+      <strong>📷 Question / Concept Photo</strong>
+
+      <p style="margin-top:8px;">
+        Upload a photo to find related board questions
+      </p>
+
+      <input
+        type="file"
+        id="photo"
+        accept="image/*">
+
+    </div>
+
+
+    <button onclick="searchQuestions()">
+      🔎 Find Board Questions
+    </button>
+
+    <button onclick="openPracticeMode()">
+      🎯 Practice Mode
+    </button>
+
+  </div>
+
+
+  <!-- PERFORMANCE -->
+
+  <div class="performance-box">
+
+    <h2>📊 Student Performance</h2>
+
+    <p style="color:#7b829b;margin-top:7px;">
+      Practice Mode ka tumhara overall performance
+    </p>
+
+    <div class="performance-grid">
+
+      <div class="performance-card">
+        <div>🎯 Attempts</div>
+        <div class="big" id="performanceAttempts">0</div>
+      </div>
+
+      <div class="performance-card">
+        <div>✅ Correct</div>
+        <div class="big" id="performanceCorrect">0</div>
+      </div>
+
+      <div class="performance-card">
+        <div>❌ Wrong</div>
+        <div class="big" id="performanceWrong">0</div>
+      </div>
+
+      <div class="performance-card">
+        <div>🏆 Average</div>
+        <div class="big" id="performanceAverage">0%</div>
+      </div>
+
+    </div>
+
+    <div class="performance-progress">
+      <div
+        class="performance-progress-bar"
+        id="performanceProgress">
+      </div>
+    </div>
+
+    <div
+      class="performance-message"
+      id="performanceMessage">
+      Abhi Practice Mode start karo 🎯
+    </div>
+
+  </div>
+
+
+  <!-- RECENT SEARCHES -->
+
+  <div class="recent-searches" id="recentSearches">
+
+    <h2>🕘 Recent Searches</h2>
+
+    <div id="recentSearchList">
+      <p>No recent searches yet.</p>
+    </div>
+
+  </div>
+
+
+  <!-- RESULTS -->
+
+  <div class="results" id="results">
+
+    <p style="text-align:center;">
+      Select a subject, chapter or concept to search.
+    </p>
+
+  </div>
+
+</div>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div class="settings-overlay" id="settingsOverlay">
+
+  <div class="settings-box">
+
+    <h2>⚙️ Settings</h2>
+
+    <button onclick="closeSettings()">
+      ✖ Close
+    </button>
+
+    <button onclick="openSavedQuestions()">
+      🔖 Saved Questions
+    </button>
+
+    <button onclick="openRecentSearches()">
+      🕘 Recent Searches
+    </button>
+
+    <button onclick="openRepeatedQuestions()">
+      🔁 Repeated Questions
+    </button>
+
+    <button onclick="showPerformance()">
+      📊 Student Performance
+    </button>
+
+    <button onclick="logoutFromSettings()" class="logout">
+      🚪 Logout
+    </button>
+
+    <div class="support">
+
+      <strong>Help & Support</strong>
+
+      <a href="mailto:BOARDHELPER24@GMAIL.COM">
+        📧 Contact Support
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   LOGIN
+========================================= */
+
+const LOGIN_USERNAME = "VANSH RAJPUT";
+const LOGIN_PASSWORD = "1234";
+
+
+/* =========================================
+   API + PERFORMANCE CACHE
+========================================= */
+
+const API_BASE = "http://localhost:5000";
+
+let allQuestionsCache = null;
+let questionsLoadingPromise = null;
+
+
+async function getAllQuestions(forceRefresh = false){
+
+  if(allQuestionsCache && !forceRefresh){
+    return allQuestionsCache;
+  }
+
+  if(questionsLoadingPromise && !forceRefresh){
+    return questionsLoadingPromise;
+  }
+
+  questionsLoadingPromise = fetch(
+    API_BASE + "/api/questions"
+  )
+  .then(response => {
+
+    if(!response.ok){
+      throw new Error("Questions API failed");
+    }
+
+    return response.json();
+  })
+  .then(data => {
+
+    allQuestionsCache = data.questions || [];
+
+    questionsLoadingPromise = null;
+
+    return allQuestionsCache;
+  })
+  .catch(error => {
+
+    questionsLoadingPromise = null;
+
+    throw error;
+  });
+
+  return questionsLoadingPromise;
+}
+
+
+/* =========================================
+   CHAPTERS
+========================================= */
+
+const chapters = {
+
+"Science":[
+"Chemical Reactions and Equations",
+"Acids, Bases and Salts",
+"Metals and Non-metals",
+"Carbon and its Compounds",
+"Life Processes",
+"Control and Coordination",
+"How do Organisms Reproduce?",
+"Heredity",
+"Light – Reflection and Refraction",
+"The Human Eye and the Colourful World",
+"Electricity",
+"Magnetic Effects of Electric Current",
+"Our Environment"
+],
+
+"Mathematics":[
+"Real Numbers",
+"Polynomials",
+"Pair of Linear Equations in Two Variables",
+"Quadratic Equations",
+"Arithmetic Progressions",
+"Triangles",
+"Coordinate Geometry",
+"Introduction to Trigonometry",
+"Some Applications of Trigonometry",
+"Circles",
+"Areas Related to Circles",
+"Surface Areas and Volumes",
+"Statistics",
+"Probability"
+],
+
+"Social Science":[
+"The Rise of Nationalism in Europe",
+"Nationalism in India",
+"The Making of a Global World",
+"The Age of Industrialisation",
+"Print Culture and the Modern World",
+"Resources and Development",
+"Forest and Wildlife Resources",
+"Water Resources",
+"Agriculture",
+"Minerals and Energy Resources",
+"Manufacturing Industries",
+"Lifelines of National Economy",
+"Power Sharing",
+"Federalism",
+"Gender, Religion and Caste",
+"Political Parties",
+"Outcomes of Democracy",
+"Challenges to Democracy",
+"Development",
+"Sectors of the Indian Economy",
+"Money and Credit",
+"Globalisation and the Indian Economy",
+"Consumer Rights"
+],
+
+"English":[
+"A Letter to God",
+"Nelson Mandela: Long Walk to Freedom",
+"Two Stories about Flying",
+"From the Diary of Anne Frank",
+"Glimpses of India",
+"Mijbil the Otter",
+"Madam Rides the Bus",
+"The Sermon at Benares",
+"The Proposal",
+"Dust of Snow",
+"Fire and Ice",
+"A Tiger in the Zoo",
+"How to Tell Wild Animals",
+"The Ball Poem",
+"Amanda!",
+"Animals",
+"The Trees",
+"Fog",
+"The Tale of Custard the Dragon",
+"For Anne Gregory",
+"A Triumph of Surgery",
+"The Thief's Story",
+"The Midnight Visitor",
+"A Question of Trust",
+"Footprints without Feet",
+"The Making of a Scientist",
+"The Necklace",
+"Bholi",
+"The Book That Saved the Earth",
+"Reading Skills",
+"Writing Skills",
+"Grammar"
+],
+
+"Hindi":[
+"बड़े भाई साहब",
+"डायरी का एक पन्ना",
+"तताँरा-वामीरो कथा",
+"तीसरी कसम के शिल्पकार शैलेंद्र",
+"अब कहाँ दूसरे के दुख से दुखी होने वाले",
+"पतझर में टूटी पत्तियाँ",
+"कारतूस",
+"कबीर की साखियाँ",
+"मनुष्यता",
+"पर्वत प्रदेश में पावस",
+"कर चले हम फ़िदा",
+"आत्मत्राण",
+"हरिहर काका",
+"टोपी शुक्ला",
+"पद",
+"राम-लक्ष्मण-परशुराम संवाद",
+"उत्साह और अट नहीं रही",
+"यह दंतुरित मुस्कान और फसल",
+"संगतकार",
+"व्याकरण",
+"लेखन",
+"अपठित गद्यांश"
+]
+
+};
+
+
+/* =========================================
+   LOGIN
+========================================= */
+
+function login(){
+
+  const username =
+    document.getElementById("username").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const message =
+    document.getElementById("loginMessage");
+
+  if(
+    username === LOGIN_USERNAME &&
+    password === LOGIN_PASSWORD
+  ){
+
+    document.getElementById("loginPage").style.display="none";
+
+    document.getElementById("dashboard").style.display="block";
+
+    message.textContent="";
+
+    loadQuestionCount();
+
+    loadPerformance();
+
+    displayRecentSearches();
+
+  }else{
+
+    message.style.color="#e74c3c";
+
+    message.textContent =
+      "❌ Incorrect username or password";
+  }
+}
+
+
+function logout(){
+
+  document.getElementById("dashboard").style.display="none";
+
+  document.getElementById("loginPage").style.display="block";
+
+  document.getElementById("username").value="";
+
+  document.getElementById("password").value="";
+}
+
+
+function logoutFromSettings(){
+
+  closeSettings();
+
+  logout();
+}
+
+
+/* =========================================
+   CHAPTER UPDATE
+========================================= */
+
+function updateChapters(){
+
+  const subject =
+    document.getElementById("subject").value;
+
+  const chapterSelect =
+    document.getElementById("chapter");
+
+  chapterSelect.innerHTML =
+    '<option value="">Select Chapter</option>';
+
+  if(chapters[subject]){
+
+    chapters[subject].forEach(chapter => {
+
+      const option =
+        document.createElement("option");
+
+      option.value=chapter;
+
+      option.textContent=chapter;
+
+      chapterSelect.appendChild(option);
+
+    });
+  }
+}
+
+
+/* =========================================
+   QUESTION COUNT
+========================================= */
+
+async function loadQuestionCount(){
+
+  try{
+
+    const questions =
+      await getAllQuestions();
+
+    document.getElementById("questionCount").textContent =
+      questions.length;
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById("questionCount").textContent="All";
+  }
+}
+
+
+/* =========================================
+   HTML SAFETY
+========================================= */
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+async function searchQuestions(){
+
+  const subject =
+    document.getElementById("subject").value;
+
+  const chapter =
+    document.getElementById("chapter").value;
+
+  const year =
+    document.getElementById("year").value;
+
+  const marks =
+    document.getElementById("marks").value;
+
+  const concept =
+    document.getElementById("concept").value
+      .trim()
+      .toLowerCase();
+
+  saveRecentSearch(
+    subject,
+    chapter,
+    year,
+    marks,
+    concept
+  );
+
+  const results =
+    document.getElementById("results");
+
+  results.innerHTML=`
+    <p style="text-align:center;color:#737c99;">
+      ⏳ Questions search ho rahe hain...
+    </p>
+  `;
+
+  try{
+
+    const questions =
+      await getAllQuestions();
+
+    const filtered =
+      questions.filter(q => {
+
+        const subjectMatch =
+          !subject ||
+          String(q.subject || "")
+            .trim()
+            .toLowerCase() ===
+          subject.trim().toLowerCase();
+
+        const chapterMatch =
+          !chapter ||
+          String(q.chapter || "") === chapter;
+
+        const yearMatch =
+          !year ||
+          String(q.year || "") === year;
+
+        const marksMatch =
+          !marks ||
+          String(q.marks || "") === marks;
+
+        const conceptMatch =
+          !concept ||
+          String(q.concept || "")
+            .toLowerCase()
+            .includes(concept) ||
+          String(q.question || "")
+            .toLowerCase()
+            .includes(concept);
+
+        return(
+          subjectMatch &&
+          chapterMatch &&
+          yearMatch &&
+          marksMatch &&
+          conceptMatch
+        );
+      });
+
+
+    if(filtered.length===0){
+
+      results.innerHTML=`
+        <p style="text-align:center;color:#737c99;">
+          No matching questions found.
+        </p>
+      `;
+
+      return;
+    }
+
+
+    let html=`
+      <h2 style="margin-bottom:15px;color:#27385e;">
+        🔥 Related Board Questions
+      </h2>
+    `;
+
+
+    filtered.forEach((q,index)=>{
+
+      html+=`
+
+        <div class="question"
+             style="animation-delay:${Math.min(index*0.03,.3)}s">
+
+          <h3>${escapeHTML(q.question)}</h3>
+
+          <div class="meta">
+
+            📚 ${escapeHTML(q.subject)}
+            &nbsp; | &nbsp;
+
+            📖 ${escapeHTML(q.chapter)}
+            &nbsp; | &nbsp;
+
+            📅 ${escapeHTML(q.year)}
+            &nbsp; | &nbsp;
+
+            📝 ${escapeHTML(q.marks)}
+
+            <button
+              class="save-question"
+              onclick='saveQuestion(${JSON.stringify(q)})'>
+
+              ⭐ Save Question
+
+            </button>
+
+          </div>
+
+          <div class="solution">
+
+            <strong>Solution:</strong><br>
+
+            ${escapeHTML(q.solution || "Solution not available.")}
+
+          </div>
+
+        </div>
+      `;
+    });
+
+
+    results.innerHTML=html;
+
+
+  }catch(error){
+
+    console.error(error);
+
+    results.innerHTML=`
+      <p style="text-align:center;color:#e74c3c;">
+        ❌ Server se questions load nahi ho pa rahe.
+        <br><br>
+        Check karo ki backend server running hai.
+      </p>
+    `;
+  }
+}
+
+
+/* =========================================
+   RECENT SEARCHES
+========================================= */
+
+function saveRecentSearch(
+  subject,
+  chapter,
+  year,
+  marks,
+  concept
+){
+
+  const recentSearch={
+    subject:subject || "All Subjects",
+    chapter:chapter || "All Chapters",
+    year:year || "All Years",
+    marks:marks || "All Marks",
+    concept:concept || "All Concepts"
+  };
+
+  let searches=
+    JSON.parse(
+      localStorage.getItem("recentSearches") || "[]"
+    );
+
+  searches.unshift(recentSearch);
+
+  searches=searches.slice(0,5);
+
+  localStorage.setItem(
+    "recentSearches",
+    JSON.stringify(searches)
+  );
+
+  displayRecentSearches();
+}
+
+
+function displayRecentSearches(){
+
+  const list =
+    document.getElementById("recentSearchList");
+
+  if(!list)return;
+
+  const searches =
+    JSON.parse(
+      localStorage.getItem("recentSearches") || "[]"
+    );
+
+  if(searches.length===0){
+
+    list.innerHTML=
+      "<p>No recent searches yet.</p>";
+
+    return;
+  }
+
+  list.innerHTML="";
+
+  searches.forEach(search=>{
+
+    const item =
+      document.createElement("div");
+
+    item.className="recent-item";
+
+    item.textContent=
+      `📚 ${search.subject} | 📖 ${search.chapter} | 📅 ${search.year} | 📝 ${search.marks}`;
+
+    list.appendChild(item);
+  });
+}
+
+
+function openRecentSearches(){
+
+  const section =
+    document.getElementById("recentSearches");
+
+  section.style.display="block";
+
+  displayRecentSearches();
+
+  closeSettings();
+
+  section.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+}
+
+
+/* =========================================
+   SAVED QUESTIONS
+========================================= */
+
+function saveQuestion(question){
+
+  let savedQuestions=
+    JSON.parse(
+      localStorage.getItem("savedQuestions") || "[]"
+    );
+
+  const alreadySaved =
+    savedQuestions.some(
+      q => q.question === question.question
+    );
+
+  if(alreadySaved){
+
+    alert("⚠️ Question already saved!");
+
+    return;
+  }
+
+  savedQuestions.push(question);
+
+  localStorage.setItem(
+    "savedQuestions",
+    JSON.stringify(savedQuestions)
+  );
+
+  alert("⭐ Question Saved!");
+}
+
+
+function openSavedQuestions(){
+
+  const savedQuestions=
+    JSON.parse(
+      localStorage.getItem("savedQuestions") || "[]"
+    );
+
+  if(savedQuestions.length===0){
+
+    alert("🔖 No saved questions yet.");
+
+    return;
+  }
+
+
+  let html=
+    "<h2 style='color:#27385e;margin-bottom:15px;'>🔖 Saved Questions</h2>";
+
+
+  savedQuestions.forEach((q,index)=>{
+
+    html+=`
+
+      <div class="question">
+
+        <h3>
+          ${index+1}. ${escapeHTML(q.question)}
+        </h3>
+
+        <div class="meta">
+
+          📚 ${escapeHTML(q.subject)}
+          &nbsp; | &nbsp;
+
+          📖 ${escapeHTML(q.chapter)}
+          &nbsp; | &nbsp;
+
+          📅 ${escapeHTML(q.year)}
+          &nbsp; | &nbsp;
+
+          📝 ${escapeHTML(q.marks)}
+
+        </div>
+
+        <div class="solution">
+
+          <strong>Solution:</strong><br>
+
+          ${escapeHTML(
+            q.solution || "Solution not available."
+          )}
+
+          <button
+            onclick="removeSavedQuestion(${index})"
+            class="remove-saved">
+
+            🗑️ Remove
+
+          </button>
+
+        </div>
+
+      </div>
+    `;
+  });
+
+
+  document.getElementById("results").innerHTML=html;
+
+  closeSettings();
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+
+function removeSavedQuestion(index){
+
+  const savedQuestions=
+    JSON.parse(
+      localStorage.getItem("savedQuestions") || "[]"
+    );
+
+  savedQuestions.splice(index,1);
+
+  localStorage.setItem(
+    "savedQuestions",
+    JSON.stringify(savedQuestions)
+  );
+
+  openSavedQuestions();
+}
+
+
+/* =========================================
+   REPEATED QUESTIONS
+========================================= */
+
+async function openRepeatedQuestions(){
+
+  try{
+
+    const questions =
+      await getAllQuestions();
+
+    if(!questions.length){
+
+      alert("🔁 No questions available.");
+
+      return;
+    }
+
+
+    const grouped={};
+
+
+    questions.forEach(q=>{
+
+      const key=
+        String(q.question || "")
+          .trim()
+          .toLowerCase();
+
+      if(!key)return;
+
+      if(!grouped[key]){
+        grouped[key]=[];
+      }
+
+      grouped[key].push(q);
+    });
+
+
+    const repeated=
+      Object.values(grouped)
+        .filter(group=>group.length>1);
+
+
+    if(!repeated.length){
+
+      alert("🔁 No repeated questions found.");
+
+      return;
+    }
+
+
+    let html=
+      "<h2 style='color:#27385e;margin-bottom:15px;'>🔁 Repeated Questions</h2>";
+
+
+    repeated.forEach((group,index)=>{
+
+      const q=group[0];
+
+      const years=[
+        ...new Set(
+          group
+            .map(item=>item.year)
+            .filter(Boolean)
+        )
+      ];
+
+
+      html+=`
+
+        <div class="question">
+
+          <h3>
+            ${index+1}. ${escapeHTML(q.question)}
+          </h3>
+
+          <div class="meta">
+
+            📚 ${escapeHTML(q.subject)}
+            &nbsp; | &nbsp;
+
+            📖 ${escapeHTML(q.chapter)}
+            &nbsp; | &nbsp;
+
+            📅 ${years.join(", ")}
+            &nbsp; | &nbsp;
+
+            🔁 Repeated ${group.length} times
+
+          </div>
+
+          <div class="solution">
+
+            <strong>Solution:</strong><br>
+
+            ${escapeHTML(
+              q.solution || "Solution not available."
+            )}
+
+          </div>
+
+        </div>
+      `;
+    });
+
+
+    document.getElementById("results").innerHTML=html;
+
+    closeSettings();
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "❌ Could not load questions. Check that backend server is running."
+    );
+  }
+}
+
+
+/* =========================================
+   SETTINGS
+========================================= */
+
+function openSettings(){
+
+  document.getElementById(
+    "settingsOverlay"
+  ).style.display="flex";
+}
+
+
+function closeSettings(){
+
+  document.getElementById(
+    "settingsOverlay"
+  ).style.display="none";
+}
+
+
+/* =========================================
+   PRACTICE MODE
+========================================= */
+
+let practiceQuestions=[];
+let practiceIndex=0;
+let practiceScore=0;
+let practiceAnswered=false;
+
+
+async function openPracticeMode(){
+
+  const subject=
+    document.getElementById("subject").value;
+
+  const chapter=
+    document.getElementById("chapter").value;
+
+
+  if(!subject){
+
+    alert("⚠️ Pehle Subject select karo.");
+
+    return;
+  }
+
+
+  if(!chapter){
+
+    alert("⚠️ Pehle Chapter select karo.");
+
+    return;
+  }
+
+
+  const results=
+    document.getElementById("results");
+
+
+  results.innerHTML=`
+
+    <div class="practice-box">
+
+      <h2>🎯 Practice Mode</h2>
+
+      <p style="margin-top:8px;">
+
+        📚 ${escapeHTML(subject)}
+        &nbsp; | &nbsp;
+        📖 ${escapeHTML(chapter)}
+
+      </p>
+
+      <div id="practiceArea">
+
+        <p style="text-align:center;margin-top:20px;color:#737c99;">
+          ⏳ Questions prepare ho rahe hain...
+        </p>
+
+      </div>
+
+    </div>
+  `;
+
+
+  try{
+
+    const response=
+      await fetch(
+        API_BASE + "/api/practice",
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            subject:subject,
+            chapter:chapter
+          })
+        }
+      );
+
+
+    const data=
+      await response.json();
+
+
+    if(!response.ok){
+
+      throw new Error(
+        data.error ||
+        "Practice questions load nahi hue."
+      );
+    }
+
+
+    practiceQuestions=
+      data.questions || [];
+
+
+    if(!practiceQuestions.length){
+
+      document.getElementById(
+        "practiceArea"
+      ).innerHTML=`
+
+        <p style="text-align:center;color:#737c99;">
+          ❌ Is chapter ke liye practice questions nahi mile.
+        </p>
+
+      `;
+
+      return;
+    }
+
+
+    practiceQuestions=
+      shuffleArray(
+        [...practiceQuestions]
+      );
+
+
+    practiceIndex=0;
+
+    practiceScore=0;
+
+    showPracticeQuestion();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById(
+      "practiceArea"
+    ).innerHTML=`
+
+      <p style="text-align:center;color:#e74c3c;">
+
+        ❌ Practice Mode load nahi ho raha.
+
+        <br><br>
+
+        Check karo ki backend server running hai.
+
+      </p>
+
+    `;
+  }
+}
+
+
+/* =========================================
+   NORMALIZE OPTIONS
+========================================= */
+
+function normalizePracticeOptions(q){
+
+  const raw=
+    Array.isArray(q.options)
+      ? q.options
+      : [];
+
+
+  return raw.map((option,index)=>{
+
+    if(
+      typeof option === "object" &&
+      option !== null
+    ){
+
+      return{
+        letter:String(
+          option.letter ??
+          String.fromCharCode(97+index)
+        ).toLowerCase(),
+
+        text:String(
+          option.text ??
+          option.value ??
+          ""
+        )
+      };
+
+    }
+
+
+    return{
+      letter:String.fromCharCode(97+index),
+
+      text:String(option)
+    };
+  });
+}
+
+
+/* =========================================
+   SHOW PRACTICE QUESTION
+========================================= */
+
+function showPracticeQuestion(){
+
+  practiceAnswered=false;
+
+
+  const area=
+    document.getElementById("practiceArea");
+
+
+  if(
+    practiceIndex >=
+    practiceQuestions.length
+  ){
+
+    showPracticeResult();
+
+    return;
+  }
+
+
+  const q=
+    practiceQuestions[practiceIndex];
+
+
+  /* 
+     Options shuffle honge,
+     lekin original option letter same rahega.
+     Isse correct answer hamesha sahi option par
+     tick/highlight hoga.
+  */
+
+  const options=
+    shuffleArray(
+      normalizePracticeOptions(q)
+    );
+
+
+  let correctLetter=
+    String(
+      q.answerLetter ??
+      q.correctAnswerLetter ??
+      ""
+    ).trim().toLowerCase();
+
+
+  const correctText=
+    String(
+      q.answer ??
+      q.correctAnswer ??
+      ""
+    ).trim();
+
+
+  if(!correctLetter && correctText){
+
+    const originalOptions=
+      normalizePracticeOptions(q);
+
+    const found=
+      originalOptions.find(
+        option =>
+          option.text.trim() === correctText
+      );
+
+    if(found){
+      correctLetter=
+        found.letter.toLowerCase();
+    }
+  }
+
+
+  area.innerHTML=`
+
+    <div class="practice-score">
+
+      Score:
+      ${practiceScore} / ${practiceIndex}
+
+    </div>
+
+
+    <div class="practice-question">
+
+      <div class="meta">
+
+        Question
+        ${practiceIndex+1}
+        of
+        ${practiceQuestions.length}
+
+      </div>
+
+
+      <h2>
+        ${escapeHTML(q.question)}
+      </h2>
+
+
+      <div id="practiceOptions">
+
+        ${options.map((option,index)=>`
+
+          <button
+            type="button"
+            class="practice-option"
+
+            data-letter="${escapeHTML(
+              option.letter
+            )}"
+
+            data-correct="${escapeHTML(
+              correctLetter
+            )}"
+
+            onclick="checkPracticeAnswer(this)">
+
+            ${String.fromCharCode(65+index)}.
+            ${escapeHTML(option.text)}
+
+          </button>
+
+        `).join("")}
+
+      </div>
+
+
+      <button
+        id="practiceNext"
+        class="practice-next practice-hidden"
+        onclick="nextPracticeQuestion()">
+
+        ➡️ Next Question
+
+      </button>
+
+    </div>
+  `;
+}
+
+
+/* =========================================
+   CHECK PRACTICE ANSWER
+========================================= */
+
+function checkPracticeAnswer(button){
+
+  if(practiceAnswered){
+    return;
+  }
+
+
+  practiceAnswered=true;
+
+
+  const selected=
+    String(
+      button.dataset.letter || ""
+    ).toLowerCase();
+
+
+  const correct=
+    String(
+      button.dataset.correct || ""
+    ).toLowerCase();
+
+
+  const options=
+    document.querySelectorAll(
+      ".practice-option"
+    );
+
+
+  options.forEach(option=>{
+
+    option.disabled=true;
+
+
+    const optionLetter=
+      String(
+        option.dataset.letter || ""
+      ).toLowerCase();
+
+
+    if(
+      correct &&
+      optionLetter === correct
+    ){
+
+      option.classList.add("correct");
+    }
+  });
+
+
+  if(
+    selected &&
+    correct &&
+    selected === correct
+  ){
+
+    button.classList.add("correct");
+
+    practiceScore++;
+
+  }else{
+
+    button.classList.add("wrong");
+  }
+
+
+  document
+    .getElementById("practiceNext")
+    .classList.remove("practice-hidden");
+}
+
+
+/* =========================================
+   NEXT PRACTICE QUESTION
+========================================= */
+
+function nextPracticeQuestion(){
+
+  practiceIndex++;
+
+  showPracticeQuestion();
+}
+
+
+/* =========================================
+   PRACTICE RESULT
+========================================= */
+
+function showPracticeResult(){
+
+  const area=
+    document.getElementById("practiceArea");
+
+
+  const total=
+    practiceQuestions.length;
+
+
+  const percentage=
+    total
+      ? Math.round(
+          (practiceScore/total)*100
+        )
+      : 0;
+
+
+  let message=
+    "Keep Practicing 💪";
+
+
+  if(percentage>=80){
+
+    message="Excellent! 🔥";
+
+  }else if(percentage>=60){
+
+    message="Good Job! 👍";
+  }
+
+
+  savePracticePerformance(
+    practiceScore,
+    total,
+    percentage
+  );
+
+
+  area.innerHTML=`
+
+    <div
+      class="practice-question"
+      style="text-align:center;">
+
+      <h2>🎉 Practice Complete</h2>
+
+
+      <div class="practice-score">
+
+        ${practiceScore} / ${total}
+
+      </div>
+
+
+      <p style="font-size:18px;margin-top:10px;">
+
+        Percentage:
+        ${percentage}%
+
+      </p>
+
+
+      <p style="font-size:20px;margin-top:15px;">
+
+        ${message}
+
+      </p>
+
+
+      <button
+        onclick="openPracticeMode()"
+        style="margin-top:20px;">
+
+        🔄 Practice Again
+
+      </button>
+
+    </div>
+  `;
+
+
+  updateBestScore();
+}
+
+
+/* =========================================
+   PERFORMANCE STORAGE
+========================================= */
+
+function getPerformance(){
+
+  return JSON.parse(
+    localStorage.getItem(
+      "boardHelperPerformance"
+    ) ||
+    JSON.stringify({
+      attempts:0,
+      correct:0,
+      wrong:0,
+      totalQuestions:0,
+      totalPercentage:0,
+      bestPercentage:0
+    })
+  );
+}
+
+
+function savePracticePerformance(
+  score,
+  total,
+  percentage
+){
+
+  const performance=
+    getPerformance();
+
+
+  performance.attempts++;
+
+  performance.correct+=score;
+
+  performance.wrong+=
+    Math.max(0,total-score);
+
+  performance.totalQuestions+=total;
+
+  performance.totalPercentage+=percentage;
+
+
+  if(
+    percentage >
+    performance.bestPercentage
+  ){
+
+    performance.bestPercentage=
+      percentage;
+  }
+
+
+  localStorage.setItem(
+    "boardHelperPerformance",
+    JSON.stringify(performance)
+  );
+
+
+  loadPerformance();
+}
+
+
+function loadPerformance(){
+
+  const p=
+    getPerformance();
+
+
+  const average=
+    p.attempts
+      ? Math.round(
+          p.totalPercentage /
+          p.attempts
+        )
+      : 0;
+
+
+  document.getElementById(
+    "performanceAttempts"
+  ).textContent=
+    p.attempts;
+
+
+  document.getElementById(
+    "performanceCorrect"
+  ).textContent=
+    p.correct;
+
+
+  document.getElementById(
+    "performanceWrong"
+  ).textContent=
+    p.wrong;
+
+
+  document.getElementById(
+    "performanceAverage"
+  ).textContent=
+    average + "%";
+
+
+  document.getElementById(
+    "performanceProgress"
+  ).style.width=
+    average + "%";
+
+
+  document.getElementById(
+    "bestScore"
+  ).textContent=
+    p.bestPercentage + "%";
+
+
+  const message=
+    document.getElementById(
+      "performanceMessage"
+    );
+
+
+  if(!p.attempts){
+
+    message.textContent=
+      "Abhi Practice Mode start karo 🎯";
+
+    return;
+  }
+
+
+  if(average>=80){
+
+    message.textContent=
+      "🔥 Excellent performance!";
+
+  }else if(average>=60){
+
+    message.textContent=
+      "👍 Good performance!";
+
+  }else{
+
+    message.textContent=
+      "💪 Practice karte raho, score improve hoga!";
+  }
+}
+
+
+function updateBestScore(){
+
+  loadPerformance();
+}
+
+
+function showPerformance(){
+
+  closeSettings();
+
+  loadPerformance();
+
+  document
+    .querySelector(".performance-box")
+    .scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+}
+
+
+/* =========================================
+   CLEAR PERFORMANCE
+========================================= */
+
+function clearPerformance(){
+
+  if(
+    !confirm(
+      "Kya tum performance history clear karna chahte ho?"
+    )
+  ){
+
+    return;
+  }
+
+
+  localStorage.removeItem(
+    "boardHelperPerformance"
+  );
+
+
+  loadPerformance();
+}
+
+
+/* =========================================
+   RANDOM SHUFFLE
+========================================= */
+
+function shuffleArray(array){
+
+  for(
+    let i=array.length-1;
+    i>0;
+    i--
+  ){
+
+    const j=
+      Math.floor(
+        Math.random()*(i+1)
+      );
+
+
+    [
+      array[i],
+      array[j]
+    ]=[
+      array[j],
+      array[i]
+    ];
+  }
+
+
+  return array;
+}
+
+
+/* =========================================
+   ENTER KEY LOGIN
+========================================= */
+
+document
+  .getElementById("password")
+  .addEventListener(
+    "keydown",
+    event=>{
+
+      if(event.key==="Enter"){
+
+        login();
+      }
+    }
+  );
+
+
+/* =========================================
+   CLOSE SETTINGS ON OUTSIDE CLICK
+========================================= */
+
+document
+  .getElementById("settingsOverlay")
+  .addEventListener(
+    "click",
+    event=>{
+
+      if(
+        event.target.id ===
+        "settingsOverlay"
+      ){
+
+        closeSettings();
+      }
+    }
+  );
+
+
+/* =========================================
+   INITIAL UI
+========================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    loadPerformance();
+
+    displayRecentSearches();
+
+  }
+);
+/* =====================================================
+   PREMIUM INTRO CONTROLLER
+===================================================== */
+
+window.addEventListener("load", function(){
+
+  const intro =
+    document.getElementById("premiumIntro");
+
+  if(!intro){
+    return;
+  }
+
+  /*
+    Intro approximately 3 seconds chalega.
+    Uske baad smooth exit.
+  */
+
+  setTimeout(function(){
+
+    intro.classList.add("hideIntro");
+
+    setTimeout(function(){
+
+      intro.remove();
+
+    }, 850);
+
+  }, 2800);
+
+});
+</script>
+
+</body>
+</html>
