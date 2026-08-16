@@ -569,6 +569,8 @@ button:active{
   margin-top:12px;
   text-align:left;
   box-shadow:none;
+  position:relative;
+  padding-right:50px;
 }
 
 .practice-option:hover{
@@ -586,6 +588,28 @@ button:active{
   background:#f9d9dc !important;
   border-color:#dc3545 !important;
   color:#721c24 !important;
+}
+
+.practice-option.correct::after{
+  content:"✓";
+  position:absolute;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:22px;
+  font-weight:bold;
+  color:#28a745;
+}
+
+.practice-option.wrong::after{
+  content:"✕";
+  position:absolute;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:22px;
+  font-weight:bold;
+  color:#dc3545;
 }
 
 .practice-option:disabled{
@@ -1439,7 +1463,7 @@ const LOGIN_PASSWORD = "1234";
    API
 ===================================================== */
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://board-helper-backend.onrender.com";
 
 let allQuestionsCache = null;
 let questionsLoadingPromise = null;
@@ -1447,46 +1471,72 @@ let questionsLoadingPromise = null;
 
 /* =====================================================
    LOAD ALL QUESTIONS
+   FRESH DATA + CACHE BUSTING
 ===================================================== */
 
 async function getAllQuestions(forceRefresh = false){
 
-  if(allQuestionsCache && !forceRefresh){
+  if(
+    allQuestionsCache &&
+    !forceRefresh
+  ){
     return allQuestionsCache;
   }
 
-  if(questionsLoadingPromise && !forceRefresh){
+  if(
+    questionsLoadingPromise &&
+    !forceRefresh
+  ){
     return questionsLoadingPromise;
   }
 
-  questionsLoadingPromise = fetch(
-    API_BASE + "/api/questions"
-  )
-  .then(response => {
+  questionsLoadingPromise =
+    fetch(
+      API_BASE +
+      "/api/questions?_=" +
+      Date.now(),
+      {
+        method:"GET",
+        cache:"no-store",
+        headers:{
+          "Cache-Control":"no-cache",
+          "Pragma":"no-cache"
+        }
+      }
+    )
+    .then(response=>{
 
-    if(!response.ok){
-      throw new Error("Questions API failed");
-    }
+      if(!response.ok){
 
-    return response.json();
-  })
-  .then(data => {
+        throw new Error(
+          "Questions API failed: " +
+          response.status
+        );
 
-    allQuestionsCache =
-      Array.isArray(data.questions)
-        ? data.questions
-        : [];
+      }
 
-    questionsLoadingPromise = null;
+      return response.json();
 
-    return allQuestionsCache;
-  })
-  .catch(error => {
+    })
+    .then(data=>{
 
-    questionsLoadingPromise = null;
+      allQuestionsCache =
+        Array.isArray(data.questions)
+          ? data.questions
+          : [];
 
-    throw error;
-  });
+      questionsLoadingPromise=null;
+
+      return allQuestionsCache;
+
+    })
+    .catch(error=>{
+
+      questionsLoadingPromise=null;
+
+      throw error;
+
+    });
 
   return questionsLoadingPromise;
 }
@@ -1622,7 +1672,6 @@ const chapters = {
 
 /* =====================================================
    TEXT NORMALIZATION
-   IMPORTANT FOR SEARCH
 ===================================================== */
 
 function normalizeText(value){
@@ -1673,27 +1722,43 @@ function normalizeMarks(value){
 function login(){
 
   const username =
-    document.getElementById("username").value.trim();
+    document.getElementById(
+      "username"
+    ).value.trim();
 
   const password =
-    document.getElementById("password").value;
+    document.getElementById(
+      "password"
+    ).value;
 
   const message =
-    document.getElementById("loginMessage");
+    document.getElementById(
+      "loginMessage"
+    );
 
   if(
     username === LOGIN_USERNAME &&
     password === LOGIN_PASSWORD
   ){
 
-    document.getElementById("loginPage").style.display="none";
+    document.getElementById(
+      "loginPage"
+    ).style.display="none";
 
-    document.getElementById("dashboard").style.display="block";
+    document.getElementById(
+      "dashboard"
+    ).style.display="block";
 
     message.textContent="";
 
-    loadQuestionCount();
+    /*
+      Force fresh load after login
+    */
+
+    loadQuestionCount(true);
+
     loadPerformance();
+
     displayRecentSearches();
 
   }else{
@@ -1702,19 +1767,31 @@ function login(){
 
     message.textContent =
       "❌ Incorrect username or password";
+
   }
 }
 
 
 function logout(){
 
-  document.getElementById("dashboard").style.display="none";
+  document.getElementById(
+    "dashboard"
+  ).style.display="none";
 
-  document.getElementById("loginPage").style.display="block";
+  document.getElementById(
+    "loginPage"
+  ).style.display="block";
 
-  document.getElementById("username").value="";
+  document.getElementById(
+    "username"
+  ).value="";
 
-  document.getElementById("password").value="";
+  document.getElementById(
+    "password"
+  ).value="";
+
+  allQuestionsCache=null;
+
 }
 
 
@@ -1723,6 +1800,7 @@ function logoutFromSettings(){
   closeSettings();
 
   logout();
+
 }
 
 
@@ -1733,29 +1811,41 @@ function logoutFromSettings(){
 function updateChapters(){
 
   const subject =
-    document.getElementById("subject").value;
+    document.getElementById(
+      "subject"
+    ).value;
 
   const chapterSelect =
-    document.getElementById("chapter");
+    document.getElementById(
+      "chapter"
+    );
 
   chapterSelect.innerHTML =
     '<option value="">Select Chapter</option>';
 
   if(chapters[subject]){
 
-    chapters[subject].forEach(chapter => {
+    chapters[subject].forEach(
+      chapter=>{
 
-      const option =
-        document.createElement("option");
+        const option =
+          document.createElement(
+            "option"
+          );
 
-      option.value=chapter;
+        option.value=chapter;
 
-      option.textContent=chapter;
+        option.textContent=chapter;
 
-      chapterSelect.appendChild(option);
+        chapterSelect.appendChild(
+          option
+        );
 
-    });
+      }
+    );
+
   }
+
 }
 
 
@@ -1763,21 +1853,31 @@ function updateChapters(){
    QUESTION COUNT
 ===================================================== */
 
-async function loadQuestionCount(){
+async function loadQuestionCount(
+  forceRefresh=false
+){
 
   try{
 
     const questions =
-      await getAllQuestions();
+      await getAllQuestions(
+        forceRefresh
+      );
 
-    document.getElementById("questionCount").textContent =
+    document.getElementById(
+      "questionCount"
+    ).textContent =
       questions.length;
 
   }catch(error){
 
     console.error(error);
 
-    document.getElementById("questionCount").textContent="All";
+    document.getElementById(
+      "questionCount"
+    ).textContent =
+      "Error";
+
   }
 }
 
@@ -1794,30 +1894,40 @@ function escapeHTML(value){
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
+
 }
 
 
 /* =====================================================
-   SEARCH
-   FIXED
+   SEARCH QUESTIONS
 ===================================================== */
 
 async function searchQuestions(){
 
   const subject =
-    document.getElementById("subject").value;
+    document.getElementById(
+      "subject"
+    ).value;
 
   const chapter =
-    document.getElementById("chapter").value;
+    document.getElementById(
+      "chapter"
+    ).value;
 
   const year =
-    document.getElementById("year").value;
+    document.getElementById(
+      "year"
+    ).value;
 
   const marks =
-    document.getElementById("marks").value;
+    document.getElementById(
+      "marks"
+    ).value;
 
   const concept =
-    document.getElementById("concept").value.trim();
+    document.getElementById(
+      "concept"
+    ).value.trim();
 
 
   saveRecentSearch(
@@ -1830,97 +1940,130 @@ async function searchQuestions(){
 
 
   const results =
-    document.getElementById("results");
+    document.getElementById(
+      "results"
+    );
 
 
   results.innerHTML=`
-    <p style="text-align:center;color:#737c99;">
+
+    <p style="
+      text-align:center;
+      color:#737c99;
+      padding:20px;
+    ">
+
       ⏳ Questions search ho rahe hain...
+
     </p>
+
   `;
 
 
   try{
 
+    /*
+      Fresh questions load
+    */
+
     const questions =
-      await getAllQuestions();
+      await getAllQuestions(
+        true
+      );
+
+
+    const selectedSubject =
+      normalizeText(
+        subject
+      );
+
+    const selectedChapter =
+      normalizeText(
+        chapter
+      );
+
+    const selectedYear =
+      normalizeYear(
+        year
+      );
+
+    const selectedMarks =
+      normalizeMarks(
+        marks
+      );
+
+    const searchConcept =
+      normalizeText(
+        concept
+      );
 
 
     const filtered =
-      questions.filter(q => {
-
-        /* SUBJECT */
+      questions.filter(q=>{
 
         const questionSubject =
-          normalizeText(q.subject);
+          normalizeText(
+            q.subject
+          );
 
-        const selectedSubject =
-          normalizeText(subject);
+        const questionChapter =
+          normalizeText(
+            q.chapter
+          );
+
+        const questionYear =
+          normalizeYear(
+            q.year
+          );
+
+        const questionMarks =
+          normalizeMarks(
+            q.marks
+          );
+
+        const questionConcept =
+          normalizeText(
+            q.concept
+          );
+
+        const questionText =
+          normalizeText(
+            q.question
+          );
 
 
         const subjectMatch =
           !selectedSubject ||
-          questionSubject === selectedSubject;
-
-
-        /* CHAPTER */
-
-        const questionChapter =
-          normalizeText(q.chapter);
-
-        const selectedChapter =
-          normalizeText(chapter);
+          questionSubject ===
+          selectedSubject;
 
 
         const chapterMatch =
           !selectedChapter ||
-          questionChapter === selectedChapter;
-
-
-        /* YEAR */
-
-        const questionYear =
-          normalizeYear(q.year);
-
-        const selectedYear =
-          normalizeYear(year);
+          questionChapter ===
+          selectedChapter;
 
 
         const yearMatch =
           !selectedYear ||
-          questionYear === selectedYear;
-
-
-        /* MARKS */
-
-        const questionMarks =
-          normalizeMarks(q.marks);
-
-        const selectedMarks =
-          normalizeMarks(marks);
+          questionYear ===
+          selectedYear;
 
 
         const marksMatch =
           !selectedMarks ||
-          questionMarks === selectedMarks;
-
-
-        /* CONCEPT */
-
-        const searchConcept =
-          normalizeText(concept);
-
-        const questionConcept =
-          normalizeText(q.concept);
-
-        const questionText =
-          normalizeText(q.question);
+          questionMarks ===
+          selectedMarks;
 
 
         const conceptMatch =
           !searchConcept ||
-          questionConcept.includes(searchConcept) ||
-          questionText.includes(searchConcept);
+          questionConcept.includes(
+            searchConcept
+          ) ||
+          questionText.includes(
+            searchConcept
+          );
 
 
         return(
@@ -1937,83 +2080,132 @@ async function searchQuestions(){
     if(filtered.length===0){
 
       results.innerHTML=`
-        <p style="text-align:center;color:#737c99;">
-          No matching questions found.
+
+        <p style="
+          text-align:center;
+          color:#737c99;
+          padding:20px;
+        ">
+
+          ❌ No matching questions found.
+
         </p>
+
       `;
 
+      window.currentSearchResults=[];
+
       return;
+
     }
 
 
     let html=`
-      <h2 style="margin-bottom:15px;color:#27385e;">
+
+      <h2 style="
+        margin-bottom:15px;
+        color:#27385e;
+      ">
+
         🔥 Related Board Questions
+
       </h2>
 
-      <p style="margin-bottom:15px;color:#737c99;">
-        ${filtered.length} question(s) found
+      <p style="
+        margin-bottom:15px;
+        color:#737c99;
+      ">
+
+        ${filtered.length}
+        question(s) found
+
       </p>
+
     `;
 
 
-    filtered.forEach((q,index)=>{
+    filtered.forEach(
+      (q,index)=>{
 
-      html+=`
+        html+=`
 
-        <div
-          class="question"
-          style="animation-delay:${Math.min(index*0.03,.3)}s">
+          <div
+            class="question"
+            style="
+              animation-delay:
+              ${Math.min(index*.03,.3)}s
+            "
+          >
 
-          <h3>
-            ${escapeHTML(q.question)}
-          </h3>
+            <h3>
+              ${escapeHTML(
+                q.question
+              )}
+            </h3>
 
-          <div class="meta">
+            <div class="meta">
 
-            📚 ${escapeHTML(q.subject)}
-            &nbsp; | &nbsp;
+              📚 ${escapeHTML(
+                q.subject
+              )}
 
-            📖 ${escapeHTML(q.chapter)}
-            &nbsp; | &nbsp;
+              &nbsp; | &nbsp;
 
-            📅 ${escapeHTML(q.year)}
-            &nbsp; | &nbsp;
+              📖 ${escapeHTML(
+                q.chapter
+              )}
 
-            📝 ${escapeHTML(q.marks)}
+              &nbsp; | &nbsp;
 
-            <button
-              class="save-question"
-              data-question-index="${index}"
-              onclick="saveFilteredQuestion(this)">
+              📅 ${escapeHTML(
+                q.year
+              )}
 
-              ⭐ Save Question
+              &nbsp; | &nbsp;
 
-            </button>
+              📝 ${escapeHTML(
+                q.marks
+              )}
+
+              <button
+                class="save-question"
+                data-question-index="${index}"
+                onclick="
+                  saveFilteredQuestion(this)
+                "
+              >
+
+                ⭐ Save Question
+
+              </button>
+
+            </div>
+
+            <div class="solution">
+
+              <strong>
+                Solution:
+              </strong>
+
+              <br>
+
+              ${escapeHTML(
+                q.solution ||
+                "Solution not available."
+              )}
+
+            </div>
 
           </div>
 
-          <div class="solution">
+        `;
 
-            <strong>Solution:</strong><br>
-
-            ${escapeHTML(
-              q.solution ||
-              "Solution not available."
-            )}
-
-          </div>
-
-        </div>
-      `;
-    });
+      }
+    );
 
 
     results.innerHTML=html;
 
-
-    /* Store current search result
-       so Save button knows exact question */
 
     window.currentSearchResults =
       filtered;
@@ -2021,16 +2213,39 @@ async function searchQuestions(){
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      "SEARCH ERROR:",
+      error
+    );
 
     results.innerHTML=`
-      <p style="text-align:center;color:#e74c3c;">
+
+      <p style="
+        text-align:center;
+        color:#e74c3c;
+        padding:20px;
+      ">
+
         ❌ Server se questions load nahi ho pa rahe.
+
         <br><br>
-        Check karo ki backend server running hai.
+
+        Backend server check karo.
+
+        <br><br>
+
+        <small>
+          ${escapeHTML(
+            error.message
+          )}
+        </small>
+
       </p>
+
     `;
+
   }
+
 }
 
 
@@ -2046,18 +2261,24 @@ function saveFilteredQuestion(button){
     );
 
   const question =
-    window.currentSearchResults?.[index];
+    window.currentSearchResults?.[
+      index
+    ];
 
 
   if(!question){
 
-    alert("❌ Question save nahi ho paya.");
+    alert(
+      "❌ Question save nahi ho paya."
+    );
 
     return;
+
   }
 
 
   saveQuestion(question);
+
 }
 
 
@@ -2075,15 +2296,25 @@ function saveRecentSearch(
 
   const recentSearch={
 
-    subject:subject || "All Subjects",
+    subject:
+      subject ||
+      "All Subjects",
 
-    chapter:chapter || "All Chapters",
+    chapter:
+      chapter ||
+      "All Chapters",
 
-    year:year || "All Years",
+    year:
+      year ||
+      "All Years",
 
-    marks:marks || "All Marks",
+    marks:
+      marks ||
+      "All Marks",
 
-    concept:concept || "All Concepts"
+    concept:
+      concept ||
+      "All Concepts"
 
   };
 
@@ -2096,7 +2327,10 @@ function saveRecentSearch(
     );
 
 
-  searches.unshift(recentSearch);
+  searches.unshift(
+    recentSearch
+  );
+
 
   searches =
     searches.slice(0,5);
@@ -2104,11 +2338,14 @@ function saveRecentSearch(
 
   localStorage.setItem(
     "recentSearches",
-    JSON.stringify(searches)
+    JSON.stringify(
+      searches
+    )
   );
 
 
   displayRecentSearches();
+
 }
 
 
@@ -2139,25 +2376,34 @@ function displayRecentSearches(){
       "<p>No recent searches yet.</p>";
 
     return;
+
   }
 
 
   list.innerHTML="";
 
 
-  searches.forEach(search=>{
+  searches.forEach(
+    search=>{
 
-    const item =
-      document.createElement("div");
+      const item =
+        document.createElement(
+          "div"
+        );
 
-    item.className="recent-item";
+      item.className =
+        "recent-item";
 
-    item.textContent =
-      `📚 ${search.subject} | 📖 ${search.chapter} | 📅 ${search.year} | 📝 ${search.marks}`;
+      item.textContent =
+        `📚 ${search.subject} | 📖 ${search.chapter} | 📅 ${search.year} | 📝 ${search.marks}`;
 
-    list.appendChild(item);
+      list.appendChild(
+        item
+      );
 
-  });
+    }
+  );
+
 }
 
 
@@ -2182,6 +2428,7 @@ function openRecentSearches(){
     behavior:"smooth",
     block:"start"
   });
+
 }
 
 
@@ -2189,7 +2436,9 @@ function openRecentSearches(){
    SAVED QUESTIONS
 ===================================================== */
 
-function saveQuestion(question){
+function saveQuestion(
+  question
+){
 
   let savedQuestions =
     JSON.parse(
@@ -2201,30 +2450,44 @@ function saveQuestion(question){
 
   const alreadySaved =
     savedQuestions.some(
-      q =>
-        normalizeText(q.question) ===
-        normalizeText(question.question)
+      q=>
+        normalizeText(
+          q.question
+        ) ===
+        normalizeText(
+          question.question
+        )
     );
 
 
   if(alreadySaved){
 
-    alert("⚠️ Question already saved!");
+    alert(
+      "⚠️ Question already saved!"
+    );
 
     return;
+
   }
 
 
-  savedQuestions.push(question);
+  savedQuestions.push(
+    question
+  );
 
 
   localStorage.setItem(
     "savedQuestions",
-    JSON.stringify(savedQuestions)
+    JSON.stringify(
+      savedQuestions
+    )
   );
 
 
-  alert("⭐ Question Saved!");
+  alert(
+    "⭐ Question Saved!"
+  );
+
 }
 
 
@@ -2240,9 +2503,12 @@ function openSavedQuestions(){
 
   if(savedQuestions.length===0){
 
-    alert("🔖 No saved questions yet.");
+    alert(
+      "🔖 No saved questions yet."
+    );
 
     return;
+
   }
 
 
@@ -2250,53 +2516,78 @@ function openSavedQuestions(){
     "<h2 style='color:#27385e;margin-bottom:15px;'>🔖 Saved Questions</h2>";
 
 
-  savedQuestions.forEach((q,index)=>{
+  savedQuestions.forEach(
+    (q,index)=>{
 
-    html+=`
+      html+=`
 
-      <div class="question">
+        <div class="question">
 
-        <h3>
-          ${index+1}. ${escapeHTML(q.question)}
-        </h3>
+          <h3>
+            ${index+1}.
+            ${escapeHTML(
+              q.question
+            )}
+          </h3>
 
-        <div class="meta">
+          <div class="meta">
 
-          📚 ${escapeHTML(q.subject)}
-          &nbsp; | &nbsp;
+            📚 ${escapeHTML(
+              q.subject
+            )}
 
-          📖 ${escapeHTML(q.chapter)}
-          &nbsp; | &nbsp;
+            &nbsp; | &nbsp;
 
-          📅 ${escapeHTML(q.year)}
-          &nbsp; | &nbsp;
+            📖 ${escapeHTML(
+              q.chapter
+            )}
 
-          📝 ${escapeHTML(q.marks)}
+            &nbsp; | &nbsp;
+
+            📅 ${escapeHTML(
+              q.year
+            )}
+
+            &nbsp; | &nbsp;
+
+            📝 ${escapeHTML(
+              q.marks
+            )}
+
+          </div>
+
+          <div class="solution">
+
+            <strong>
+              Solution:
+            </strong>
+
+            <br>
+
+            ${escapeHTML(
+              q.solution ||
+              "Solution not available."
+            )}
+
+            <button
+              onclick="
+                removeSavedQuestion(${index})
+              "
+              class="remove-saved"
+            >
+
+              🗑️ Remove
+
+            </button>
+
+          </div>
 
         </div>
 
-        <div class="solution">
+      `;
 
-          <strong>Solution:</strong><br>
-
-          ${escapeHTML(
-            q.solution ||
-            "Solution not available."
-          )}
-
-          <button
-            onclick="removeSavedQuestion(${index})"
-            class="remove-saved">
-
-            🗑️ Remove
-
-          </button>
-
-        </div>
-
-      </div>
-    `;
-  });
+    }
+  );
 
 
   document.getElementById(
@@ -2311,10 +2602,13 @@ function openSavedQuestions(){
     top:0,
     behavior:"smooth"
   });
+
 }
 
 
-function removeSavedQuestion(index){
+function removeSavedQuestion(
+  index
+){
 
   const savedQuestions =
     JSON.parse(
@@ -2324,16 +2618,22 @@ function removeSavedQuestion(index){
     );
 
 
-  savedQuestions.splice(index,1);
+  savedQuestions.splice(
+    index,
+    1
+  );
 
 
   localStorage.setItem(
     "savedQuestions",
-    JSON.stringify(savedQuestions)
+    JSON.stringify(
+      savedQuestions
+    )
   );
 
 
   openSavedQuestions();
+
 }
 
 
@@ -2346,47 +2646,59 @@ async function openRepeatedQuestions(){
   try{
 
     const questions =
-      await getAllQuestions();
+      await getAllQuestions(
+        true
+      );
 
 
     if(!questions.length){
 
-      alert("🔁 No questions available.");
+      alert(
+        "🔁 No questions available."
+      );
 
       return;
+
     }
 
 
     const grouped={};
 
 
-    questions.forEach(q=>{
+    questions.forEach(
+      q=>{
 
-      const key =
-        normalizeText(q.question);
+        const key =
+          normalizeText(
+            q.question
+          );
 
 
-      if(!key){
-        return;
+        if(!key){
+          return;
+        }
+
+
+        if(!grouped[key]){
+          grouped[key]=[];
+        }
+
+
+        grouped[key].push(
+          q
+        );
+
       }
-
-
-      if(!grouped[key]){
-        grouped[key]=[];
-      }
-
-
-      grouped[key].push(q);
-
-    });
+    );
 
 
     const repeated =
-      Object.values(grouped)
-        .filter(
-          group =>
-            group.length > 1
-        );
+      Object.values(
+        grouped
+      ).filter(
+        group=>
+          group.length>1
+      );
 
 
     if(!repeated.length){
@@ -2396,6 +2708,7 @@ async function openRepeatedQuestions(){
       );
 
       return;
+
     }
 
 
@@ -2414,8 +2727,9 @@ async function openRepeatedQuestions(){
           [
             ...new Set(
               group
-                .map(item =>
-                  item.year
+                .map(
+                  item=>
+                    item.year
                 )
                 .filter(Boolean)
             )
@@ -2427,21 +2741,32 @@ async function openRepeatedQuestions(){
           <div class="question">
 
             <h3>
+
               ${index+1}.
-              ${escapeHTML(q.question)}
+              ${escapeHTML(
+                q.question
+              )}
+
             </h3>
 
             <div class="meta">
 
-              📚 ${escapeHTML(q.subject)}
+              📚 ${escapeHTML(
+                q.subject
+              )}
+
               &nbsp; | &nbsp;
 
-              📖 ${escapeHTML(q.chapter)}
+              📖 ${escapeHTML(
+                q.chapter
+              )}
+
               &nbsp; | &nbsp;
 
               📅 ${escapeHTML(
                 years.join(", ")
               )}
+
               &nbsp; | &nbsp;
 
               🔁 Repeated
@@ -2452,7 +2777,11 @@ async function openRepeatedQuestions(){
 
             <div class="solution">
 
-              <strong>Solution:</strong><br>
+              <strong>
+                Solution:
+              </strong>
+
+              <br>
 
               ${escapeHTML(
                 q.solution ||
@@ -2462,7 +2791,9 @@ async function openRepeatedQuestions(){
             </div>
 
           </div>
+
         `;
+
       }
     );
 
@@ -2483,12 +2814,16 @@ async function openRepeatedQuestions(){
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     alert(
       "❌ Could not load questions. Check that backend server is running."
     );
+
   }
+
 }
 
 
@@ -2501,6 +2836,7 @@ function openSettings(){
   document.getElementById(
     "settingsOverlay"
   ).style.display="flex";
+
 }
 
 
@@ -2509,6 +2845,7 @@ function closeSettings(){
   document.getElementById(
     "settingsOverlay"
   ).style.display="none";
+
 }
 
 
@@ -2521,6 +2858,10 @@ let practiceIndex=0;
 let practiceScore=0;
 let practiceAnswered=false;
 
+
+/* =====================================================
+   OPEN PRACTICE
+===================================================== */
 
 async function openPracticeMode(){
 
@@ -2543,6 +2884,7 @@ async function openPracticeMode(){
     );
 
     return;
+
   }
 
 
@@ -2553,6 +2895,7 @@ async function openPracticeMode(){
     );
 
     return;
+
   }
 
 
@@ -2566,25 +2909,40 @@ async function openPracticeMode(){
 
     <div class="practice-box">
 
-      <h2>🎯 Practice Mode</h2>
+      <h2>
+        🎯 Practice Mode
+      </h2>
 
       <p style="margin-top:8px;">
 
-        📚 ${escapeHTML(subject)}
+        📚 ${escapeHTML(
+          subject
+        )}
+
         &nbsp; | &nbsp;
-        📖 ${escapeHTML(chapter)}
+
+        📖 ${escapeHTML(
+          chapter
+        )}
 
       </p>
 
       <div id="practiceArea">
 
-        <p style="text-align:center;margin-top:20px;color:#737c99;">
+        <p style="
+          text-align:center;
+          margin-top:20px;
+          color:#737c99;
+        ">
+
           ⏳ Questions prepare ho rahe hain...
+
         </p>
 
       </div>
 
     </div>
+
   `;
 
 
@@ -2593,19 +2951,31 @@ async function openPracticeMode(){
     const response =
       await fetch(
         API_BASE +
-        "/api/practice",
+        "/api/practice?_=" +
+        Date.now(),
         {
           method:"POST",
 
+          cache:"no-store",
+
           headers:{
             "Content-Type":
-              "application/json"
+              "application/json",
+
+            "Cache-Control":
+              "no-cache"
           },
 
           body:JSON.stringify({
-            subject:subject,
-            chapter:chapter
+
+            subject:
+              subject,
+
+            chapter:
+              chapter
+
           })
+
         }
       );
 
@@ -2620,28 +2990,40 @@ async function openPracticeMode(){
         data.error ||
         "Practice questions load nahi hue."
       );
+
     }
 
 
     practiceQuestions =
-      Array.isArray(data.questions)
+      Array.isArray(
+        data.questions
+      )
         ? data.questions
         : [];
 
 
-    if(!practiceQuestions.length){
+    if(
+      !practiceQuestions.length
+    ){
 
       document.getElementById(
         "practiceArea"
       ).innerHTML=`
 
-        <p style="text-align:center;color:#737c99;">
-          ❌ Is chapter ke liye practice questions nahi mile.
+        <p style="
+          text-align:center;
+          color:#737c99;
+        ">
+
+          ❌ Is chapter ke liye
+          practice questions nahi mile.
+
         </p>
 
       `;
 
       return;
+
     }
 
 
@@ -2660,24 +3042,40 @@ async function openPracticeMode(){
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      "PRACTICE ERROR:",
+      error
+    );
 
     document.getElementById(
       "practiceArea"
     ).innerHTML=`
 
-      <p style="text-align:center;color:#e74c3c;">
+      <p style="
+        text-align:center;
+        color:#e74c3c;
+      ">
 
         ❌ Practice Mode load nahi ho raha.
 
         <br><br>
 
-        Check karo ki backend server running hai.
+        Backend server check karo.
+
+        <br><br>
+
+        <small>
+          ${escapeHTML(
+            error.message
+          )}
+        </small>
 
       </p>
 
     `;
+
   }
+
 }
 
 
@@ -2688,7 +3086,9 @@ async function openPracticeMode(){
 function normalizePracticeOptions(q){
 
   const raw =
-    Array.isArray(q.options)
+    Array.isArray(
+      q.options
+    )
       ? q.options
       : [];
 
@@ -2696,33 +3096,70 @@ function normalizePracticeOptions(q){
   return raw.map(
     (option,index)=>{
 
+      /*
+        JSON option object
+      */
+
       if(
         typeof option === "object" &&
         option !== null
       ){
 
-        return{
-
-          letter:String(
+        let letter =
+          String(
             option.letter ??
             option.option ??
+            option.id ??
             String.fromCharCode(
               97+index
             )
           )
           .trim()
-          .toLowerCase(),
+          .toLowerCase();
+
+
+        /*
+          Convert:
+          A -> a
+          (a) -> a
+          option a -> a
+        */
+
+        const letterMatch =
+          letter.match(
+            /([a-d])/
+          );
+
+
+        if(letterMatch){
+
+          letter =
+            letterMatch[1]
+              .toLowerCase();
+
+        }
+
+
+        return{
+
+          letter:letter,
 
           text:String(
             option.text ??
             option.value ??
             option.label ??
+            option.answer ??
             ""
           )
+
         };
 
       }
 
+
+      /*
+        JSON option string
+      */
 
       return{
 
@@ -2731,61 +3168,77 @@ function normalizePracticeOptions(q){
             97+index
           ),
 
-        text:String(option)
+        text:String(
+          option
+        )
 
       };
 
     }
   );
+
 }
 
 
 /* =====================================================
    GET CORRECT LETTER
-   FIXED FOR MULTIPLE JSON FORMATS
+   SUPPORTS MANY JSON FORMATS
 ===================================================== */
 
 function getCorrectPracticeLetter(q){
 
   const options =
-    normalizePracticeOptions(q);
-
-
-  let correctLetter =
-    String(
-      q.answerLetter ??
-      q.correctAnswerLetter ??
-      q.correctOption ??
-      q.answer ??
-      ""
-    )
-    .trim()
-    .toLowerCase();
+    normalizePracticeOptions(
+      q
+    );
 
 
   /*
-    If answer is like:
-    "a"
-    "A"
-    "(a)"
-    "option a"
+    STEP 1:
+    Try answerLetter
+  */
+
+  const rawAnswer =
+    q.answerLetter ??
+    q.correctAnswerLetter ??
+    q.correctOption ??
+    q.correct_option_letter ??
+    q.answer ??
+    q.correctAnswer ??
+    q.correct_option ??
+    q.correct ??
+    "";
+
+
+  const rawText =
+    String(
+      rawAnswer
+    )
+    .trim();
+
+
+  /*
+    STEP 2:
+    Check if answer contains
+    option letter.
   */
 
   const letterMatch =
-    correctLetter.match(
-      /(?:option\s*)?[\(\[]?([a-d])[\)\]]?/i
+    rawText.match(
+      /(?:option\s*)?[\(\[\{]?\s*([a-d])\s*[\)\]\}]?/i
     );
 
 
   if(letterMatch){
 
     const possibleLetter =
-      letterMatch[1].toLowerCase();
+      letterMatch[1]
+        .toLowerCase();
 
 
     const found =
       options.find(
-        option =>
+        option=>
           option.letter ===
           possibleLetter
       );
@@ -2794,20 +3247,21 @@ function getCorrectPracticeLetter(q){
     if(found){
 
       return found.letter;
+
     }
+
   }
 
 
   /*
-    If answer is actual option text
+    STEP 3:
+    Check answer as actual
+    option text.
   */
 
   const cleanAnswer =
     normalizeText(
-      q.answer ??
-      q.correctAnswer ??
-      q.correct_option ??
-      ""
+      rawText
     );
 
 
@@ -2815,51 +3269,68 @@ function getCorrectPracticeLetter(q){
 
     const found =
       options.find(
-        option =>
+        option=>
           normalizeText(
             option.text
-          ) === cleanAnswer
+          ) ===
+          cleanAnswer
       );
 
 
     if(found){
 
       return found.letter;
+
     }
+
   }
 
 
   /*
-    Some JSON may use:
-    correct: "b"
+    STEP 4:
+    Partial text match
+    for slightly different
+    formatting.
   */
 
-  const alternate =
-    String(
-      q.correct ??
-      q.correct_option_letter ??
-      ""
-    )
-    .trim()
-    .toLowerCase();
+  if(cleanAnswer){
 
+    const found =
+      options.find(
+        option=>{
 
-  if(alternate){
+          const optionText =
+            normalizeText(
+              option.text
+            );
 
-    const match =
-      alternate.match(
-        /([a-d])/
+          return(
+            optionText &&
+            (
+              optionText.includes(
+                cleanAnswer
+              ) ||
+              cleanAnswer.includes(
+                optionText
+              )
+            )
+          );
+
+        }
       );
 
 
-    if(match){
+    if(found){
 
-      return match[1];
+      return found.letter;
+
     }
+
   }
 
 
   return "";
+
 }
 
 
@@ -2886,6 +3357,7 @@ function showPracticeQuestion(){
     showPracticeResult();
 
     return;
+
   }
 
 
@@ -2897,19 +3369,29 @@ function showPracticeQuestion(){
 
   /*
     IMPORTANT:
-    Options shuffle honge,
-    lekin har option ka ORIGINAL
-    letter preserve rahega.
+
+    Options shuffle honge.
+
+    ORIGINAL letter preserve
+    rahega.
+
+    Isliye correct answer
+    shuffle ke baad bhi identify
+    hoga.
   */
 
   const options =
     shuffleArray(
-      normalizePracticeOptions(q)
+      normalizePracticeOptions(
+        q
+      )
     );
 
 
   const correctLetter =
-    getCorrectPracticeLetter(q);
+    getCorrectPracticeLetter(
+      q
+    );
 
 
   area.innerHTML=`
@@ -2936,7 +3418,11 @@ function showPracticeQuestion(){
 
 
       <h2>
-        ${escapeHTML(q.question)}
+
+        ${escapeHTML(
+          q.question
+        )}
+
       </h2>
 
 
@@ -2957,11 +3443,15 @@ function showPracticeQuestion(){
               correctLetter
             )}"
 
-            onclick="checkPracticeAnswer(this)">
+            onclick="
+              checkPracticeAnswer(this)
+            "
+          >
 
             ${String.fromCharCode(
               65+index
             )}.
+
             ${escapeHTML(
               option.text
             )}
@@ -2977,26 +3467,60 @@ function showPracticeQuestion(){
       <button
         id="practiceNext"
         class="practice-next practice-hidden"
-        onclick="nextPracticeQuestion()">
+        onclick="
+          nextPracticeQuestion()
+        "
+      >
 
         ➡️ Next Question
 
       </button>
 
     </div>
+
   `;
+
+
+  /*
+    DEBUG:
+
+    Browser console mein actual
+    correct letter dikhega.
+
+    Example:
+    Correct answer: b
+  */
+
+  console.log(
+    "Practice Question:",
+    q.question
+  );
+
+  console.log(
+    "Options:",
+    options
+  );
+
+  console.log(
+    "Correct Answer:",
+    correctLetter
+  );
+
 }
 
 
 /* =====================================================
    CHECK PRACTICE ANSWER
-   FIXED
 ===================================================== */
 
-function checkPracticeAnswer(button){
+function checkPracticeAnswer(
+  button
+){
 
   if(practiceAnswered){
+
     return;
+
   }
 
 
@@ -3027,37 +3551,49 @@ function checkPracticeAnswer(button){
     );
 
 
-  options.forEach(option=>{
+  /*
+    Disable all buttons
+  */
 
-    option.disabled=true;
+  options.forEach(
+    option=>{
 
-
-    const optionLetter =
-      String(
-        option.dataset.letter ||
-        ""
-      )
-      .trim()
-      .toLowerCase();
+      option.disabled=true;
 
 
-    /*
-      ALWAYS highlight the actual
-      correct original option.
-    */
+      const optionLetter =
+        String(
+          option.dataset.letter ||
+          ""
+        )
+        .trim()
+        .toLowerCase();
 
-    if(
-      correct &&
-      optionLetter === correct
-    ){
 
-      option.classList.add(
-        "correct"
-      );
+      /*
+        ALWAYS mark actual
+        correct answer green.
+      */
+
+      if(
+        correct &&
+        optionLetter ===
+        correct
+      ){
+
+        option.classList.add(
+          "correct"
+        );
+
+      }
+
     }
+  );
 
-  });
 
+  /*
+    Correct answer
+  */
 
   if(
     selected &&
@@ -3065,13 +3601,24 @@ function checkPracticeAnswer(button){
     selected === correct
   ){
 
+    /*
+      Already green
+    */
+
     button.classList.add(
       "correct"
     );
 
+
     practiceScore++;
 
+
   }else{
+
+    /*
+      User selected wrong.
+      Make selected option red.
+    */
 
     button.classList.add(
       "wrong"
@@ -3079,6 +3626,10 @@ function checkPracticeAnswer(button){
 
   }
 
+
+  /*
+    Show next button
+  */
 
   const nextButton =
     document.getElementById(
@@ -3091,7 +3642,9 @@ function checkPracticeAnswer(button){
     nextButton.classList.remove(
       "practice-hidden"
     );
+
   }
+
 }
 
 
@@ -3104,6 +3657,7 @@ function nextPracticeQuestion(){
   practiceIndex++;
 
   showPracticeQuestion();
+
 }
 
 
@@ -3126,7 +3680,9 @@ function showPracticeResult(){
   const percentage =
     total
       ? Math.round(
-          (practiceScore/total)*100
+          (practiceScore /
+            total) *
+          100
         )
       : 0;
 
@@ -3135,12 +3691,16 @@ function showPracticeResult(){
     "Keep Practicing 💪";
 
 
-  if(percentage>=80){
+  if(
+    percentage>=80
+  ){
 
     message =
       "Excellent! 🔥";
 
-  }else if(percentage>=60){
+  }else if(
+    percentage>=60
+  ){
 
     message =
       "Good Job! 👍";
@@ -3159,7 +3719,8 @@ function showPracticeResult(){
 
     <div
       class="practice-question"
-      style="text-align:center;">
+      style="text-align:center;"
+    >
 
       <h2>
         🎉 Practice Complete
@@ -3175,7 +3736,10 @@ function showPracticeResult(){
       </div>
 
 
-      <p style="font-size:18px;margin-top:10px;">
+      <p style="
+        font-size:18px;
+        margin-top:10px;
+      ">
 
         Percentage:
         ${percentage}%
@@ -3183,7 +3747,10 @@ function showPracticeResult(){
       </p>
 
 
-      <p style="font-size:20px;margin-top:15px;">
+      <p style="
+        font-size:20px;
+        margin-top:15px;
+      ">
 
         ${message}
 
@@ -3191,18 +3758,23 @@ function showPracticeResult(){
 
 
       <button
-        onclick="openPracticeMode()"
-        style="margin-top:20px;">
+        onclick="
+          openPracticeMode()
+        "
+        style="margin-top:20px;"
+      >
 
         🔄 Practice Again
 
       </button>
 
     </div>
+
   `;
 
 
   updateBestScore();
+
 }
 
 
@@ -3232,6 +3804,7 @@ function getPerformance(){
 
     })
   );
+
 }
 
 
@@ -3274,6 +3847,7 @@ function savePracticePerformance(
 
     performance.bestPercentage =
       percentage;
+
   }
 
 
@@ -3286,6 +3860,7 @@ function savePracticePerformance(
 
 
   loadPerformance();
+
 }
 
 
@@ -3352,6 +3927,7 @@ function loadPerformance(){
       "Abhi Practice Mode start karo 🎯";
 
     return;
+
   }
 
 
@@ -3369,13 +3945,16 @@ function loadPerformance(){
 
     message.textContent =
       "💪 Practice karte raho, score improve hoga!";
+
   }
+
 }
 
 
 function updateBestScore(){
 
   loadPerformance();
+
 }
 
 
@@ -3391,9 +3970,13 @@ function showPerformance(){
       ".performance-box"
     )
     .scrollIntoView({
+
       behavior:"smooth",
+
       block:"start"
+
     });
+
 }
 
 
@@ -3406,6 +3989,7 @@ function clearPerformance(){
   ){
 
     return;
+
   }
 
 
@@ -3415,6 +3999,7 @@ function clearPerformance(){
 
 
   loadPerformance();
+
 }
 
 
@@ -3422,7 +4007,9 @@ function clearPerformance(){
    SHUFFLE
 ===================================================== */
 
-function shuffleArray(array){
+function shuffleArray(
+  array
+){
 
   for(
     let i=array.length-1;
@@ -3449,6 +4036,7 @@ function shuffleArray(array){
 
 
   return array;
+
 }
 
 
@@ -3457,7 +4045,9 @@ function shuffleArray(array){
 ===================================================== */
 
 document
-  .getElementById("password")
+  .getElementById(
+    "password"
+  )
   .addEventListener(
     "keydown",
     event=>{
@@ -3468,6 +4058,7 @@ document
       ){
 
         login();
+
       }
 
     }
@@ -3492,6 +4083,7 @@ document
       ){
 
         closeSettings();
+
       }
 
     }
@@ -3529,7 +4121,9 @@ window.addEventListener(
 
 
     if(!intro){
+
       return;
+
     }
 
 
