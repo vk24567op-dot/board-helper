@@ -2,14 +2,79 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-const path = require("path");
 
 const app = express();
 
+/* =========================================
+   PATHS
+========================================= */
+
+const BACKEND_DIR = __dirname;
+const PROJECT_DIR = path.join(__dirname, "..");
+
 const questionsPath = path.join(
-    __dirname,
+    BACKEND_DIR,
     "database",
     "questions.json"
+);
+
+/*
+ * Frontend index.html ke possible locations
+ */
+const rootIndexPath = path.join(
+    PROJECT_DIR,
+    "index.html"
+);
+
+const frontendIndexPath = path.join(
+    PROJECT_DIR,
+    "frontend",
+    "index.html"
+);
+
+
+/* =========================================
+   MIDDLEWARE
+========================================= */
+
+app.use(cors());
+
+app.use(express.json());
+
+app.use(express.urlencoded({
+    extended: true
+}));
+
+
+/* =========================================
+   FRONTEND STATIC FILES
+========================================= */
+
+/*
+ * Agar frontend folder me CSS / JS / images hain
+ */
+const frontendPath = path.join(
+    PROJECT_DIR,
+    "frontend"
+);
+
+if (fs.existsSync(frontendPath)) {
+
+    app.use(
+        express.static(frontendPath)
+    );
+
+}
+
+
+/*
+ * Root project ke static files
+ *
+ * Isse index.html ke saath
+ * CSS / JS / images bhi serve ho sakte hain.
+ */
+app.use(
+    express.static(PROJECT_DIR)
 );
 
 
@@ -19,21 +84,32 @@ const questionsPath = path.join(
 
 function getQuestions() {
 
+    if (!fs.existsSync(questionsPath)) {
+
+        throw new Error(
+            "questions.json not found at: " +
+            questionsPath
+        );
+
+    }
+
     const data = fs.readFileSync(
         questionsPath,
         "utf-8"
     );
 
-    return JSON.parse(data);
+    const questions = JSON.parse(data);
+
+    if (!Array.isArray(questions)) {
+
+        throw new Error(
+            "questions.json must contain an array"
+        );
+
+    }
+
+    return questions;
 }
-
-
-/* =========================================
-   MIDDLEWARE
-========================================= */
-
-app.use(cors());
-app.use(express.json());
 
 
 /* =========================================
@@ -43,17 +119,70 @@ app.use(express.json());
 app.get("/api/health", (req, res) => {
 
     res.json({
+
         success: true,
-        message: "Board Helper backend is running"
+
+        message:
+            "Board Helper backend is running"
+
     });
 
 });
-// =============================
-// FRONTEND / HOME PAGE
-// =============================
+
+
+/* =========================================
+   FRONTEND / HOME PAGE
+========================================= */
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "index.html"));
+
+    /*
+     * Pehle root index.html check
+     */
+    if (fs.existsSync(rootIndexPath)) {
+
+        return res.sendFile(
+            rootIndexPath
+        );
+
+    }
+
+
+    /*
+     * Agar frontend/index.html hai
+     */
+    if (fs.existsSync(frontendIndexPath)) {
+
+        return res.sendFile(
+            frontendIndexPath
+        );
+
+    }
+
+
+    /*
+     * Agar index.html nahi mila
+     */
+    return res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Board Helper</title>
+            <meta charset="UTF-8">
+        </head>
+
+        <body>
+
+            <h1>Board Helper</h1>
+
+            <p>
+                Frontend index.html was not found.
+            </p>
+
+        </body>
+        </html>
+    `);
+
 });
 
 
@@ -65,21 +194,38 @@ app.get("/api/questions", (req, res) => {
 
     try {
 
-        const questions = getQuestions();
+        const questions =
+            getQuestions();
 
         res.json({
+
             success: true,
-            count: questions.length,
-            questions: questions
+
+            count:
+                questions.length,
+
+            questions:
+                questions
+
         });
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Questions Error:",
+            error
+        );
 
         res.status(500).json({
+
             success: false,
-            message: "Questions database could not be loaded"
+
+            message:
+                "Questions database could not be loaded",
+
+            error:
+                error.message
+
         });
 
     }
@@ -95,114 +241,144 @@ app.get("/api/search", (req, res) => {
 
     try {
 
-        const questions = getQuestions();
+        const questions =
+            getQuestions();
 
-        const subject = req.query.subject;
-        const chapter = req.query.chapter;
-        const concept = req.query.concept;
-        const year = req.query.year;
-        const marks = req.query.marks;
+        const subject =
+            String(req.query.subject || "").trim();
 
+        const chapter =
+            String(req.query.chapter || "").trim();
 
-        const results = questions.filter((q) => {
+        const concept =
+            String(req.query.concept || "").trim();
 
+        const year =
+            String(req.query.year || "").trim();
 
-            /* SUBJECT */
-
-            if (
-                subject &&
-                String(q.subject || "")
-                    .trim()
-                    .toLowerCase() !==
-                String(subject)
-                    .trim()
-                    .toLowerCase()
-            ) {
-
-                return false;
-
-            }
+        const marks =
+            String(req.query.marks || "").trim();
 
 
-            /* CHAPTER */
+        const results =
+            questions.filter((q) => {
 
-            if (
-                chapter &&
-                String(q.chapter || "")
-                    .trim()
-                    .toLowerCase() !==
-                String(chapter)
-                    .trim()
-                    .toLowerCase()
-            ) {
+                /* =========================
+                   SUBJECT
+                ========================= */
 
-                return false;
+                if (
+                    subject &&
+                    subject.toLowerCase() !==
+                    String(q.subject || "")
+                        .trim()
+                        .toLowerCase()
+                ) {
 
-            }
+                    return false;
 
-
-            /* CONCEPT */
-
-            if (
-                concept &&
-                !String(q.concept || "")
-                    .toLowerCase()
-                    .includes(
-                        String(concept).toLowerCase()
-                    )
-            ) {
-
-                return false;
-
-            }
+                }
 
 
-            /* YEAR */
+                /* =========================
+                   CHAPTER
+                ========================= */
 
-            if (
-                year &&
-                Number(q.year) !== Number(year)
-            ) {
+                if (
+                    chapter &&
+                    chapter.toLowerCase() !==
+                    String(q.chapter || "")
+                        .trim()
+                        .toLowerCase()
+                ) {
 
-                return false;
+                    return false;
 
-            }
-
-
-            /* MARKS */
-
-            if (
-                marks &&
-                Number(q.marks) !== Number(marks)
-            ) {
-
-                return false;
-
-            }
+                }
 
 
-            return true;
+                /* =========================
+                   CONCEPT
+                ========================= */
 
-        });
+                if (
+                    concept &&
+                    !String(q.concept || "")
+                        .toLowerCase()
+                        .includes(
+                            concept.toLowerCase()
+                        )
+                ) {
+
+                    return false;
+
+                }
+
+
+                /* =========================
+                   YEAR
+                ========================= */
+
+                if (
+                    year &&
+                    Number(q.year) !==
+                    Number(year)
+                ) {
+
+                    return false;
+
+                }
+
+
+                /* =========================
+                   MARKS
+                ========================= */
+
+                if (
+                    marks &&
+                    Number(q.marks) !==
+                    Number(marks)
+                ) {
+
+                    return false;
+
+                }
+
+
+                return true;
+
+            });
 
 
         res.json({
 
             success: true,
-            count: results.length,
-            questions: results
+
+            count:
+                results.length,
+
+            questions:
+                results
 
         });
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Search Error:",
+            error
+        );
 
         res.status(500).json({
 
             success: false,
-            message: "Search failed"
+
+            message:
+                "Search failed",
+
+            error:
+                error.message
 
         });
 
@@ -217,7 +393,9 @@ app.get("/api/search", (req, res) => {
 
 function shuffleArray(array) {
 
-    const arr = [...array];
+    const arr = [
+        ...array
+    ];
 
     for (
         let i = arr.length - 1;
@@ -227,7 +405,8 @@ function shuffleArray(array) {
 
         const j =
             Math.floor(
-                Math.random() * (i + 1)
+                Math.random() *
+                (i + 1)
             );
 
         [
@@ -246,26 +425,24 @@ function shuffleArray(array) {
 
 
 /* =========================================
-   EXTRACT MCQ OPTIONS FROM QUESTION
+   EXTRACT MCQ OPTIONS
 ========================================= */
 
 function extractMCQ(questionText) {
 
-    const text = String(
-        questionText || ""
-    ).trim();
+    const text =
+        String(questionText || "")
+            .trim();
 
 
     /*
-       Example:
-
-       From which country did Garibaldi belong?
-       (a) Austria
-       (b) Italy
-       (c) Greece
-       (d) Spain
-    */
-
+     * Supported:
+     *
+     * (a) Option 1
+     * (b) Option 2
+     * (c) Option 3
+     * (d) Option 4
+     */
 
     const optionRegex =
         /\(([a-dA-D])\)\s*([\s\S]*?)(?=\s*\([a-dA-D]\)\s*|$)/g;
@@ -277,7 +454,8 @@ function extractMCQ(questionText) {
 
 
     while (
-        (match = optionRegex.exec(text)) !== null
+        (match =
+            optionRegex.exec(text)) !== null
     ) {
 
         options.push({
@@ -294,11 +472,10 @@ function extractMCQ(questionText) {
 
 
     /*
-       Agar 4 options nahi hain
-       to MCQ nahi maana jayega
-    */
+     * Exactly 4 options hone chahiye
+     */
 
-    if (options.length < 4) {
+    if (options.length !== 4) {
 
         return null;
 
@@ -306,24 +483,48 @@ function extractMCQ(questionText) {
 
 
     /*
-       Question ke andar se
-       options remove karna
-    */
+     * First option se pehle wala part
+     * actual question hai
+     */
+
+    const firstOptionIndex =
+        text.search(
+            /\([a-dA-D]\)\s*/
+        );
+
+
+    if (
+        firstOptionIndex === -1
+    ) {
+
+        return null;
+
+    }
+
 
     const cleanQuestion =
         text
-            .replace(
-                /\s*\([a-dA-D]\)\s*[\s\S]*$/,
-                ""
+            .substring(
+                0,
+                firstOptionIndex
             )
             .trim();
 
 
+    if (!cleanQuestion) {
+
+        return null;
+
+    }
+
+
     return {
 
-        question: cleanQuestion,
+        question:
+            cleanQuestion,
 
-        options: options
+        options:
+            options
 
     };
 
@@ -331,7 +532,7 @@ function extractMCQ(questionText) {
 
 
 /* =========================================
-   FIND CORRECT ANSWER FROM SOLUTION
+   FIND CORRECT ANSWER
 ========================================= */
 
 function findCorrectOption(
@@ -340,73 +541,105 @@ function findCorrectOption(
 ) {
 
     const solutionText =
-        String(solution || "").trim();
+        String(solution || "")
+            .trim();
 
 
-    if (!solutionText) {
+    if (
+        !solutionText ||
+        !options ||
+        options.length !== 4
+    ) {
 
         return null;
 
     }
 
 
-    /*
-       Ye formats support karega:
+    /* =========================
+       OPTION LETTER FIND
+    ========================= */
 
-       (a)
-       (b)
-       Correct option: (b)
-       Correct Answer: (b)
-       Answer: (b)
-    */
+    const letterPatterns = [
 
-    const letterMatch =
-        solutionText.match(
-            /\(([a-dA-D])\)/i
-        );
+        /correct\s+option\s*[:\-]?\s*\(?([a-d])\)?/i,
 
+        /correct\s+answer\s*[:\-]?\s*\(?([a-d])\)?/i,
 
-    if (letterMatch) {
+        /answer\s*[:\-]?\s*\(?([a-d])\)?/i,
 
-        const correctLetter =
-            letterMatch[1].toLowerCase();
+        /^\s*\(?([a-d])\)?(?:\s|$)/i,
+
+        /\(([a-d])\)/i
+
+    ];
 
 
-        const correctOption =
-            options.find(
-                option =>
-                    option.letter ===
-                    correctLetter
+    for (
+        const pattern of letterPatterns
+    ) {
+
+        const match =
+            solutionText.match(
+                pattern
             );
 
 
-        if (correctOption) {
+        if (match) {
 
-            return {
+            const correctLetter =
+                match[1].toLowerCase();
 
-                text: correctOption.text,
 
-                letter: correctLetter
+            const correctOption =
+                options.find(
+                    option =>
+                        option.letter ===
+                        correctLetter
+                );
 
-            };
+
+            if (correctOption) {
+
+                return {
+
+                    letter:
+                        correctLetter,
+
+                    text:
+                        correctOption.text
+
+                };
+
+            }
 
         }
 
     }
 
 
-    /*
-       Agar solution mein
-       direct answer text diya hai
+    /* =========================
+       DIRECT ANSWER TEXT
+    ========================= */
 
-       Example:
-       Answer: Italy
-    */
-
-    const cleanSolution =
+    let cleanSolution =
         solutionText
             .replace(
-                /^.*?(answer|correct answer|correct option)\s*[:\-]?\s*/i,
+                /^.*?(correct\s+answer|correct\s+option|answer)\s*[:\-]?\s*/i,
+                ""
+            )
+            .trim();
+
+
+    /*
+     * Agar solution ke beginning/end
+     * me (b) etc. ho to remove karo
+     */
+
+    cleanSolution =
+        cleanSolution
+            .replace(
+                /^\(([a-d])\)\s*/i,
                 ""
             )
             .trim();
@@ -428,9 +661,11 @@ function findCorrectOption(
 
         return {
 
-            text: directAnswer.text,
+            letter:
+                directAnswer.letter,
 
-            letter: directAnswer.letter
+            text:
+                directAnswer.text
 
         };
 
@@ -446,216 +681,365 @@ function findCorrectOption(
    PRACTICE MODE API
 ========================================= */
 
-app.post("/api/practice", (req, res) => {
-    try {
+app.post(
+    "/api/practice",
+    (req, res) => {
 
-        const questions = getQuestions();
+        try {
 
-        const subject = req.body.subject;
-        const chapter = req.body.chapter;
+            const questions =
+                getQuestions();
 
-        if (!subject || !chapter) {
-            return res.status(400).json({
-                success: false,
-                message: "Subject and chapter are required"
-            });
-        }
 
-        const filtered = questions.filter((q) => {
+            const subject =
+                String(
+                    req.body.subject || ""
+                ).trim();
 
-            const subjectMatch =
-                String(q.subject || "").trim().toLowerCase() ===
-                String(subject || "").trim().toLowerCase();
 
-            const chapterMatch =
-                String(q.chapter || "").trim().toLowerCase() ===
-                String(chapter || "").trim().toLowerCase();
+            const chapter =
+                String(
+                    req.body.chapter || ""
+                ).trim();
 
-            return subjectMatch && chapterMatch;
-        });
-
-        const mcqQuestions = [];
-
-        filtered.forEach((q) => {
-
-            const questionText = String(q.question || "");
 
             /*
-             * OPTIONS FIND
-             *
-             * Example:
-             * (a) Austria
-             * (b) Italy
-             * (c) Greece
-             * (d) Spain
+             * Subject + Chapter required
              */
 
-            const optionRegex =
-                /\(([a-dA-D])\)\s*([\s\S]*?)(?=\s*\([a-dA-D]\)\s*|$)/g;
+            if (
+                !subject ||
+                !chapter
+            ) {
 
-            const options = [];
+                return res.status(400).json({
 
-            let match;
+                    success: false,
 
-            while ((match = optionRegex.exec(questionText)) !== null) {
+                    message:
+                        "Subject and chapter are required"
 
-                options.push({
-                    letter: match[1].toLowerCase(),
-                    text: match[2].trim()
                 });
 
             }
 
-            /*
-             * 4 OPTIONS REQUIRED
-             */
 
-            if (options.length !== 4) {
-                return;
-            }
+            /* =========================
+               FILTER QUESTIONS
+            ========================= */
 
-            /*
-             * QUESTION SEPARATE KARO
-             */
+            const filtered =
+                questions.filter(
+                    (q) => {
 
-            const firstOptionIndex =
-                questionText.search(/\([a-dA-D]\)\s*/);
+                        const subjectMatch =
+                            String(
+                                q.subject || ""
+                            )
+                                .trim()
+                                .toLowerCase() ===
+                            subject
+                                .toLowerCase();
 
-            if (firstOptionIndex === -1) {
-                return;
-            }
 
-            const cleanQuestion =
-                questionText
-                    .substring(0, firstOptionIndex)
-                    .trim();
+                        const chapterMatch =
+                            String(
+                                q.chapter || ""
+                            )
+                                .trim()
+                                .toLowerCase() ===
+                            chapter
+                                .toLowerCase();
 
-            /*
-             * CORRECT ANSWER FIND KARO
-             *
-             * Solution examples:
-             * (b) Italy
-             * Correct option: (B)
-             * Answer: (b)
-             */
 
-            const solution =
-                String(q.solution || "");
+                        return (
+                            subjectMatch &&
+                            chapterMatch
+                        );
 
-            const answerMatch =
-                solution.match(
-                    /(?:correct\s+option|answer)?\s*:?\s*\(?([a-dA-D])\)?/i
+                    }
                 );
 
-            if (!answerMatch) {
-                return;
-            }
 
-            const correctLetter =
-                answerMatch[1].toLowerCase();
+            const mcqQuestions = [];
 
-            const correctOption =
-                options.find(
-                    option =>
-                        option.letter === correctLetter
+
+            /* =========================
+               CONVERT QUESTIONS TO MCQ
+            ========================= */
+
+            filtered.forEach(
+                (q) => {
+
+                    const extracted =
+                        extractMCQ(
+                            q.question
+                        );
+
+
+                    /*
+                     * MCQ nahi hai
+                     */
+
+                    if (!extracted) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Correct answer find karo
+                     */
+
+                    const correctOption =
+                        findCorrectOption(
+                            q.solution,
+                            extracted.options
+                        );
+
+
+                    /*
+                     * Correct answer nahi mila
+                     */
+
+                    if (!correctOption) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Options ko shuffle karo
+                     *
+                     * IMPORTANT:
+                     * correct answer ka TEXT
+                     * save rahega.
+                     */
+
+                    const shuffledOptions =
+                        shuffleArray(
+                            extracted.options
+                        );
+
+
+                    /*
+                     * Frontend ko sirf strings
+                     * bhejenge.
+                     */
+
+                    const finalOptions =
+                        shuffledOptions.map(
+                            option =>
+                                option.text
+                        );
+
+
+                    mcqQuestions.push({
+
+                        question:
+                            extracted.question,
+
+                        options:
+                            finalOptions,
+
+                        answer:
+                            correctOption.text
+
+                    });
+
+                }
+            );
+
+
+            /* =========================
+               QUESTION ORDER RANDOM
+            ========================= */
+
+            const finalQuestions =
+                shuffleArray(
+                    mcqQuestions
                 );
 
-            if (!correctOption) {
-                return;
-            }
 
-            /*
-             * OPTIONS RANDOM
-             */
+            /* =========================
+               RESPONSE
+            ========================= */
 
-            for (
-                let i = options.length - 1;
-                i > 0;
-                i--
-            ) {
+            res.json({
 
-                const j =
-                    Math.floor(Math.random() * (i + 1));
+                success: true,
 
-                [
-                    options[i],
-                    options[j]
-                ] = [
-                    options[j],
-                    options[i]
-                ];
-            }
+                count:
+                    finalQuestions.length,
 
-            /*
-             * IMPORTANT:
-             * FRONTEND KO STRING OPTIONS BHEJENGE
-             *
-             * Isse [object Object] nahi aayega.
-             */
+                questions:
+                    finalQuestions
 
-            const finalOptions =
-                options.map(option => option.text);
-
-            /*
-             * Correct answer ka text
-             */
-
-            mcqQuestions.push({
-                question: cleanQuestion,
-                options: finalOptions,
-                answer: correctOption.text
             });
 
-        });
+        } catch (error) {
 
-        /*
-         * QUESTIONS RANDOM ORDER
-         */
+            console.error(
+                "Practice Mode Error:",
+                error
+            );
 
-        for (
-            let i = mcqQuestions.length - 1;
-            i > 0;
-            i--
-        ) {
 
-            const j =
-                Math.floor(Math.random() * (i + 1));
+            res.status(500).json({
 
-            [
-                mcqQuestions[i],
-                mcqQuestions[j]
-            ] = [
-                mcqQuestions[j],
-                mcqQuestions[i]
-            ];
+                success: false,
+
+                message:
+                    "Practice questions could not be loaded",
+
+                error:
+                    error.message
+
+            });
+
         }
 
-        res.json({
-            success: true,
-            count: mcqQuestions.length,
-            questions: mcqQuestions
-        });
+    }
+);
 
-    } catch (error) {
 
-        console.error("Practice Mode Error:", error);
+/* =========================================
+   404 API HANDLER
+========================================= */
 
-        res.status(500).json({
+app.use(
+    "/api",
+    (req, res) => {
+
+        res.status(404).json({
+
             success: false,
-            message: "Practice questions could not be loaded"
+
+            message:
+                "API endpoint not found"
+
         });
 
     }
-});
+);
 
-const PORT = process.env.PORT || 5000;
+
+/* =========================================
+   FRONTEND FALLBACK
+========================================= */
+
+/*
+ * Browser agar koi frontend route open kare
+ * to index.html serve hoga.
+ *
+ * API routes isse pehle handle ho chuke hain.
+ */
+
+app.get(
+    "*",
+    (req, res) => {
+
+        if (
+            fs.existsSync(
+                rootIndexPath
+            )
+        ) {
+
+            return res.sendFile(
+                rootIndexPath
+            );
+
+        }
+
+
+        if (
+            fs.existsSync(
+                frontendIndexPath
+            )
+        ) {
+
+            return res.sendFile(
+                frontendIndexPath
+            );
+
+        }
+
+
+        res.status(404).send(
+            "Board Helper frontend not found"
+        );
+
+    }
+);
+
+
+/* =========================================
+   ERROR HANDLER
+========================================= */
+
+app.use(
+    (error, req, res, next) => {
+
+        console.error(
+            "Server Error:",
+            error
+        );
+
+        res.status(500).json({
+
+            success: false,
+
+            message:
+                "Internal server error"
+
+        });
+
+    }
+);
+
+
+/* =========================================
+   START SERVER
+========================================= */
+
+const PORT =
+    process.env.PORT || 5000;
+
 
 app.listen(
     PORT,
     "0.0.0.0",
     () => {
+
         console.log(
-            `Board Helper backend running on port ${PORT}`
+            "================================="
         );
+
+        console.log(
+            "Board Helper server is running"
+        );
+
+        console.log(
+            `Port: ${PORT}`
+        );
+
+        console.log(
+            `Questions: ${questionsPath}`
+        );
+
+        console.log(
+            `Root Index: ${rootIndexPath}`
+        );
+
+        console.log(
+            `Frontend Index: ${frontendIndexPath}`
+        );
+
+        console.log(
+            "================================="
+        );
+
     }
 );
