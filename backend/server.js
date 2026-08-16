@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
@@ -46,6 +47,13 @@ app.get("/api/health", (req, res) => {
         message: "Board Helper backend is running"
     });
 
+});
+// =============================
+// FRONTEND / HOME PAGE
+// =============================
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 
