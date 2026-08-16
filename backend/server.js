@@ -13,7 +13,7 @@ const BACKEND_DIR = __dirname;
 const PROJECT_DIR = path.join(__dirname, "..");
 
 const questionsPath = path.join(
-    BACKEND_DIR,
+    PROJECT_DIR,
     "database",
     "questions.json"
 );
