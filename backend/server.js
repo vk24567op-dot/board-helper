@@ -938,39 +938,20 @@ app.use(
  */
 
 app.get(
-    "*",
+    /.*/,
     (req, res) => {
 
-        if (
-            fs.existsSync(
-                rootIndexPath
-            )
-        ) {
-
-            return res.sendFile(
-                rootIndexPath
-            );
-
+        if (fs.existsSync(rootIndexPath)) {
+            return res.sendFile(rootIndexPath);
         }
 
-
-        if (
-            fs.existsSync(
-                frontendIndexPath
-            )
-        ) {
-
-            return res.sendFile(
-                frontendIndexPath
-            );
-
+        if (fs.existsSync(frontendIndexPath)) {
+            return res.sendFile(frontendIndexPath);
         }
-
 
         res.status(404).send(
             "Board Helper frontend not found"
         );
-
     }
 );
 
